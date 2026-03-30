@@ -1,130 +1,173 @@
 # IGAD: Information-Geometric Anomaly Detection
 
-**Information-Geometric Anomaly Detection via Fisher-Rao Scalar Curvature**
+**Batch-level anomaly detection via scalar curvature deviation on Fisher-Rao statistical manifolds.**
 
-## Overview
+## Core Idea
 
-IGAD is a Python library for detecting anomalies using information geometry, specifically leveraging the Fisher-Rao scalar curvature of statistical manifolds. This approach provides a principled, geometric framework for identifying outliers and anomalies in data.
+Every exponential family of probability distributions defines a Riemannian manifold
+(the Fisher-Rao manifold). Its scalar curvature R(theta) is governed by the
+**third cumulant tensor** — the multivariate generalization of skewness.
 
-## Key Features
+IGAD scores a data batch by measuring how much its fitted curvature deviates
+from a reference distribution:
+```
+IGAD(batch) = |R(theta_ref) - R(theta_local)|
+```
 
-- **Fisher-Rao Curvature**: Computes the scalar curvature of statistical manifolds
-- **Anomaly Detection**: Detects points with unusual geometric properties
-- **Multiple Distribution Families**: Support for Gaussian, Poisson, Gamma, and other exponential families
-- **Third Cumulant Analysis**: Advanced tensor computations for distribution geometry
+This makes IGAD a **shape-sensitive** anomaly detector: it catches distributional
+changes that are invisible to methods based on mean or variance alone.
 
-## Demonstrations
+## What Is Novel vs. What Is Known
 
-### Basic Demo
-**The IGAD Advantage:** In a standard shape-anomaly scenario (matched means, altered higher-order moments), IGAD achieves perfect separability (AUC = 1.000). Notice that it even outperforms a direct, naive comparison of empirical skewness (AUC = 0.983). This empirically validates our Skewness Decomposition Theorem: the intrinsic Fisher-Rao geometry provides a more precise signal than crude statistical moments.
-![IGAD Demo](igad_demo.png)
+| Component | Status |
+|---|---|
+| Fisher-Rao metric, information geometry | Known (Amari, 1985; Amari & Nagaoka, 2000) |
+| Scalar curvature formula for Hessian metrics | Known (Ruppeiner, 1995) |
+| Fourth-cumulant cancellation in Riemann tensor | Known |
+| R = 1/4 (norm(grad log det g)^2 - norm(T)^2) | Known identity |
+| **Curvature deviation as batch anomaly score** | **Novel (this work)** |
+| **Skewness-contrast interpretation** | **Novel (this work)** |
 
-### Hard Cases Demo
-**Pushing the Limits:** In highly noisy, challenging regimes where standard location-scale methods fail completely (AUC ~ 0.50), IGAD still manages to extract a meaningful geometric signal (AUC = 0.684), consistently maintaining its edge over basic skewness shifts.
-![IGAD Hard Demo](igad_hard_demo.png)
+## Results
 
-## Real-World Use Cases
+### Experiment 1: Easy Case — Gamma(9,3) vs Gamma(1.5,0.5)
+Same mean (3.0), different variance and skewness.
 
-Because IGAD excels at detecting "shape anomalies" where the mean and variance remain unchanged, it is highly effective in complex real-world scenarios:
+| Method | AUC-ROC |
+|---|---|
+| **IGAD (curvature)** | **1.0000** |
+| Batch variance shift | 1.0000 |
+| Batch skewness shift | 0.9834 |
+| Batch mean shift | 0.8150 |
 
-* **Predictive Maintenance:** In rotating machinery or industrial equipment, degradation often begins with subtle shifts in the *shape* of the acoustic or vibration noise profile, long before the overall vibration amplitude (mean/variance) spikes.
-* **Financial Fraud Detection:** Sophisticated fraudsters often attempt to "blend in" by matching the normal transaction volumes and frequencies of a user. IGAD detects the subtle structural anomalies in the transaction distribution that expose the fraud.
-* **Medical Signal Analysis:** Analyzing complex biological signals like ECG or EEG to identify microscopic, structural changes in the signal's geometry that indicate physiological anomalies, which standard amplitude-based monitors might miss.
+IGAD achieves perfect separation, but so does the variance baseline
+(variance differs by 6x). This alone does not prove unique value.
 
-## Why IGAD?
+### Experiment 2: Hard Case — Gamma(8,2) vs LogNormal (Matched Mean AND Variance)
+mean=4.0, var=2.0 for both. Only skewness differs (0.707 vs 1.105).
 
-Most traditional anomaly detection algorithms (like Isolation Forest, Mahalanobis distance, or LOF) operate on a fundamental assumption: anomalies exist far from the center of the data. 
+| Method | AUC-ROC |
+|---|---|
+| **IGAD (curvature)** | **0.6838** |
+| Batch skewness shift | 0.6514 |
+| Batch variance shift | 0.5860 |
+| Batch mean shift | 0.5502 |
 
-**But what if an anomaly is hiding in plain sight?** Consider a system degradation where the new data points share the exact same mean and variance as normal operations, but have a fundamentally different distributional shape (e.g., a shift in skewness). Distance-based detectors are completely blind to these shape-shifting anomalies.
+**IGAD wins when location-scale methods are blind.** Mean and variance
+baselines are near chance. IGAD outperforms even direct skewness comparison.
 
-**IGAD fills this gap.** By measuring the scalar curvature of the Fisher-Rao manifold, IGAD is inherently sensitive to the squared norm of the third cumulant tensor — the multivariate generalization of skewness. The IGAD score elegantly compares the local statistical geometry of a test point's neighborhood against the global reference geometry, allowing you to detect structural anomalies that leave location and scale unchanged.
+### Scaling Behavior (Hard Case)
+```
+batch_size= 200  IGAD=0.6838  Skewness=0.6514  (IGAD wins)
+batch_size= 500  IGAD=0.6748  Skewness=0.9194  (Skewness wins)
+batch_size=1000  IGAD=0.7892  Skewness=0.9686  (Skewness wins)
+```
 
-**The Paradigm Shift:** IGAD is more than just a code library; it represents a fundamental shift in anomaly detection—moving from measuring the *distance* between points to measuring the *curvature* of the statistical space.
+IGAD's advantage is in the **small-sample regime** (n < 300 per batch).
+At larger batch sizes, model-free skewness estimation dominates due to
+model misspecification (fitting Gamma MLE to LogNormal data).
 
-## The Mathematics of IGAD
+See [RESULTS.md](RESULTS.md) for complete experimental details.
 
-### The Core Equation
-IGAD leverages the Fisher-Rao scalar curvature ($R$) as an anomaly signal. The anomaly score is calculated as the difference between the global curvature of the reference system and the local curvature around the evaluated point $z$:
+## When to Use IGAD
 
-$$IGAD(z) = R(\theta_{ref}) - R(\hat{\theta}(z))$$
+IGAD is most valuable when:
+- The correct parametric family is known or approximately known
+- Batch sizes are moderate (50-300 observations)
+- Anomalies differ in distributional shape, not just location or scale
+- The family has dimension d >= 2 (1D manifolds have R=0)
 
-Where $\theta_{ref}$ represents the parameters of the global reference distribution, and $\hat{\theta}(z)$ represents the local maximum likelihood estimate of the parameters in the neighborhood of $z$.
+**Potential applications:**
+- Predictive maintenance (vibration profile shape changes)
+- Financial monitoring (transaction distribution structure shifts)
+- Medical signal analysis (waveform geometry changes)
 
-### Skewness Decomposition Theorem
-At the heart of IGAD is the Skewness Decomposition Theorem. It proves that the Fisher-Rao scalar curvature acts as a "mirror" to the squared norm of the Third Cumulant Tensor. This makes curvature the most mathematically precise metric for detecting shape shifts that remain invisible to standard distance tests.
+## When NOT to Use IGAD
 
-### Geometric Invariance
-Unlike distance-based metrics (such as Euclidean or Mahalanobis distances) which can drastically change depending on how your data is scaled or represented, IGAD is **geometrically invariant**. Because scalar curvature is an intrinsic property of the statistical manifold, IGAD measures the true essence of the distribution, entirely independent of the chosen mathematical parameterization.
+- Anomalies are simple outliers (far from center) — use Isolation Forest
+- No parametric model is appropriate — use model-free tests
+- Large batch sizes available (n > 500) — direct skewness comparison is simpler
+- 1D parameter families — scalar curvature is identically zero
 
 ## Installation
-
 ```bash
-pip install -r requirements.txt
-python setup.py install
+pip install -e .
 ```
 
-### Requirements
-- Python >= 3.9
-- numpy >= 1.24
-- scipy >= 1.10
-- scikit-learn >= 1.2
-
-
-
-## Usage: Full Anomaly Scoring Workflow
-
-The true power of IGAD lies in comparing global reference curvature to local neighborhood curvature. Here is how to compute the IGAD anomaly score for test points:
-
+## Quick Start
 ```python
 import numpy as np
-from sklearn.neighbors import NearestNeighbors
+from igad import IGADDetector
 from igad.families import GammaFamily
-from igad.curvature import scalar_curvature
 
-# 1. Setup Data
-X_train = np.random.gamma(shape=9.0, scale=3.0, size=(500, 1)) # Reference data
-X_test = np.array([[3.0], [8.0], [27.0]]) # Points to evaluate
+# Fit reference from normal data
+detector = IGADDetector(family=GammaFamily)
+reference_data = np.random.gamma(9.0, 1/3.0, size=500)
+detector.fit(reference_data)
 
-# 2. Compute Global Reference Geometry
-# Fit MLE to the entire reference dataset
-alpha_ref, beta_ref = GammaFamily.fit_mle(X_train)
-theta_ref = GammaFamily.to_natural(alpha_ref, beta_ref)
-
-# R_ref is the scalar curvature of the normal operating state
-R_ref = scalar_curvature(GammaFamily.log_partition, theta_ref)
-
-# 3. Local Geometry & Anomaly Scoring (k-NN)
-k = 20
-nn = NearestNeighbors(n_neighbors=k).fit(X_train)
-distances, indices = nn.kneighbors(X_test)
-
-igad_scores = []
-
-for i, neighbors_idx in enumerate(indices):
-    local_data = X_train[neighbors_idx]
-    
-    # Fit local MLE for the test point's neighborhood
-    alpha_local, beta_local = GammaFamily.fit_mle(local_data)
-    theta_local = GammaFamily.to_natural(alpha_local, beta_local)
-    
-    # Compute local scalar curvature
-    R_local = scalar_curvature(GammaFamily.log_partition, theta_local)
-    
-    # The IGAD Score: Difference between global and local curvature
-    score = R_ref - R_local
-    igad_scores.append(score)
-
-print(f"Global Reference Curvature: {R_ref:.4f}")
-for pt, score in zip(X_test.flatten(), igad_scores):
-    print(f"Point {pt:5.1f} | IGAD Score: {score:.4f} (Higher = More Anomalous)")
+# Score a new batch
+test_batch = np.random.gamma(1.5, 1/0.5, size=200)
+score = detector.score_batch(test_batch)
+print(f"IGAD score: {score:.6f}")  # Higher = more anomalous
 ```
 
-## Testing
-
-Run the test suite:
+## Running Tests
 ```bash
-pytest tests/ -v
+python -m pytest tests/ -v
 ```
+
+12 tests validate the curvature engine against analytical results:
+- Poisson flatness (1D manifolds have R=0)
+- Fisher metric: numerical vs analytical (3 parameter sets)
+- Third cumulant tensor: numerical vs analytical (3 parameter sets)
+- Tensor symmetry (2 parameter sets)
+- Curvature variation across parameters
+- Curvature finiteness (12 parameter combinations)
+- Formula consistency (manual vs function)
+
+## Running Experiments
+```bash
+python experiments/demo_easy.py   # Gamma vs Gamma (easy case)
+python experiments/demo_hard.py   # Gamma vs LogNormal (hard case)
+```
+
+## Project Structure
+```
+igad/                    # Python package
+  __init__.py
+  curvature.py           # Fisher metric, third cumulant tensor, scalar curvature
+  families.py            # GammaFamily, PoissonFamily (with analytical formulas)
+  detector.py            # IGADDetector (batch-level scoring)
+tests/
+  test_curvature.py      # 12 validation tests
+experiments/
+  demo_easy.py           # Experiment 1: different skewness + variance
+  demo_hard.py           # Experiment 2: matched mean AND variance
+docs/
+  proof.md               # Mathematical background
+RESULTS.md               # Full experimental results with analysis
+```
+
+## Mathematical Background
+
+The scalar curvature of a Fisher-Rao manifold for an exponential family is:
+```
+R(theta) = 1/4 * ( ||S||^2_g - ||T||^2_g )
+```
+
+where g is the Fisher metric (Hessian of the log-partition function),
+T is the third cumulant tensor, and S is its trace vector.
+
+This identity is known in Hessian geometry (see docs/proof.md for derivation
+and attribution). The novel contribution is using |R(ref) - R(local)| as
+a batch-level anomaly score sensitive to distributional shape.
+
+## References
+
+- Amari, S. (1985). Differential-Geometrical Methods in Statistics. Springer.
+- Amari, S. & Nagaoka, H. (2000). Methods of Information Geometry. AMS/Oxford.
+- Ruppeiner, G. (1995). Riemannian geometry in thermodynamic fluctuation theory. Rev. Mod. Phys.
+- Damari, O. (2026). IGAD: Information-Geometric Anomaly Detection via Fisher-Rao Scalar Curvature.
 
 ## Author
 
@@ -132,4 +175,4 @@ Omry Damari
 
 ## License
 
-See [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE)
