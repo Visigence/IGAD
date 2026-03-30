@@ -1,6 +1,7 @@
 # IGAD: Information-Geometric Anomaly Detection
 
-**Batch-level anomaly detection via scalar curvature deviation on Fisher-Rao statistical manifolds.**
+**Classical anomaly detectors are blind to shape shifts — anomalies that preserve mean and variance but change distributional geometry. IGAD detects them.
+Batch-level anomaly detection via scalar curvature deviation on Fisher-Rao statistical manifolds.**
 
 ## Core Idea
 
@@ -102,7 +103,7 @@ from igad.families import GammaFamily
 
 # Fit reference from normal data
 detector = IGADDetector(family=GammaFamily)
-reference_data = np.random.gamma(9.0, 1/3.0, size=500)
+reference_data = np.random.gamma(9.0, 1/3.0, size=200)
 detector.fit(reference_data)
 
 # Score a new batch
@@ -167,7 +168,6 @@ a batch-level anomaly score sensitive to distributional shape.
 - Amari, S. (1985). Differential-Geometrical Methods in Statistics. Springer.
 - Amari, S. & Nagaoka, H. (2000). Methods of Information Geometry. AMS/Oxford.
 - Ruppeiner, G. (1995). Riemannian geometry in thermodynamic fluctuation theory. Rev. Mod. Phys.
-- Damari, O. (2026). IGAD: Information-Geometric Anomaly Detection via Fisher-Rao Scalar Curvature.
 
 ## Author
 
