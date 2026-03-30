@@ -61,3 +61,48 @@ Failure modes:
 - Amari, S. and Nagaoka, H. (2000). Methods of Information Geometry.
 - Ruppeiner, G. (1979). Thermodynamics: A Riemannian geometric model. Phys. Rev. A.
 - Ruppeiner, G. (1995). Riemannian geometry in thermodynamic fluctuation theory. Rev. Mod. Phys.
+
+---
+
+## 6. Known Failure Mode: Constant-Curvature Families
+
+### Gaussian Manifold (Empirically Confirmed)
+
+The scalar curvature of the multivariate Gaussian manifold is constant
+(the manifold is isometric to hyperbolic space). Therefore:
+
+    |R_ref - R_local| ≈ 0  for all parameter choices
+
+Verified experimentally (experiments/demo_gaussian2d.py):
+
+    rho_ref=0.20, rho_anom=0.80  →  |R_diff| = 0.003308
+    rho_ref=0.50, rho_anom=0.70  →  |R_diff| = 0.000645
+    rho_ref=0.50, rho_anom=0.55  →  |R_diff| = 0.000049
+
+All baselines (IGAD, MLE-correlation, raw correlation) reached AUC=1.0
+at n=200 for rho=0.2 vs rho=0.8 — not because of curvature, but because
+the correlation difference (0.6) is large enough for any method to detect.
+IGAD contributed nothing unique in this setting.
+
+### What This Means
+
+IGAD requires families where R(theta) varies meaningfully with parameters.
+This holds when the third cumulant tensor T_{ijk} changes substantially
+across the parameter space — which is the case for Gamma but not Gaussian.
+
+### Families Where IGAD Is Applicable
+
+| Family       | dim | R varies? | IGAD applicable? |
+|---|---|---|---|
+| Poisson      | 1   | No (R=0)  | No               |
+| Exponential  | 1   | No (R=0)  | No               |
+| Gamma        | 2   | Yes       | Yes (confirmed)  |
+| Gaussian     | 3   | No (const)| No               |
+| Dirichlet    | k-1 | Yes       | Promising        |
+| Neg-Binomial | 2   | Yes       | Untested         |
+
+### Next Step
+
+Dirichlet(alpha_1, ..., alpha_k) with k>=3 is a d=k-1 family where
+R varies with parameters and mean+variance do not determine all parameters.
+This is the most promising direction for a strong d>=3 result.
