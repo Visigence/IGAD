@@ -142,6 +142,29 @@ python -m pytest tests/ -v
 
 ---
 
+## How to Run
+
+```bash
+# Install
+pip install -e .
+
+# Run all 12 validation tests
+python -m pytest tests/ -v
+
+# Experiment 1 — Easy case (Gamma vs Gamma)
+python experiments/demo_easy.py
+
+# Experiment 2 — Hard case + MLE control (key result)
+python experiments/demo_hard.py
+
+# Experiment 3 — Gaussian failure mode (documented limitation)
+python experiments/demo_gaussian2d.py
+```
+
+Figures saved to `docs/figures/` after each run.
+
+---
+
 ## Experimental Results
 
 ### Experiment 1 — Easy Case
