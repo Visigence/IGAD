@@ -124,7 +124,7 @@ def run_demo(seed=42):
     axes[1].legend()
 
     plt.tight_layout()
-    plt.savefig("igad_demo.png", dpi=150)
+    plt.savefig("docs/figures/exp1_easy_gamma_vs_gamma.png", dpi=150)
     print()
     print("Plot saved to igad_demo.png")
 
