@@ -1,7 +1,7 @@
 # IGAD: Information-Geometric Anomaly Detection
 
 **Author**: Omry Damari · 2026  
-**Repository**: https://github.com/Visigence/IGADimensions
+**Repository**: https://github.com/Visigence/IGAD
 
 Classical anomaly detectors are blind to shape shifts — anomalies that
 preserve mean and variance but change distributional geometry. IGAD detects them.
