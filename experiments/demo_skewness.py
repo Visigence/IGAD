@@ -3,83 +3,131 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score
-from sklearn.covariance import EllipticEnvelope
-from igad.detector import IGADDetector
-from igad.families import GammaFamily
 from igad.curvature import scalar_curvature
+from igad.families import GammaFamily
+
 
 def run_demo(seed=42):
     rng = np.random.default_rng(seed)
-    n_normal, n_anomaly = 500, 50
-    alpha_n, beta_n = 9.0, 3.0
-    X_normal = rng.gamma(alpha_n, 1.0/beta_n, size=n_normal)
-    alpha_a, beta_a = 1.5, 0.5
-    X_anomaly = rng.gamma(alpha_a, 1.0/beta_a, size=n_anomaly)
-    X_test = np.concatenate([X_normal[:100], X_anomaly])
-    y_true = np.concatenate([np.zeros(100), np.ones(n_anomaly)])
-
     print("=" * 60)
     print("IGAD Demo: Skewness-Based Anomaly Detection")
     print("=" * 60)
-    print("Normal:  Gamma(9,3) mean=3.00 skew=0.667")
-    print("Anomaly: Gamma(1.5,0.5) mean=3.00 skew=1.633")
 
-    det = IGADDetector(family=GammaFamily, k_neighbors=25)
-    det.fit(X_normal.reshape(-1, 1))
+    alpha_ref, beta_ref = 9.0, 3.0
+    theta_ref = GammaFamily.to_natural(alpha_ref, beta_ref)
+    R_ref = scalar_curvature(GammaFamily.log_partition, theta_ref)
+    print("Reference: Gamma(9,3) mean=3.00 skew=0.667")
+    print("  R_ref = %.6f" % R_ref)
 
-    scores_igad = np.zeros(len(X_test))
-    for i, z in enumerate(X_test):
-        d, idx = det.tree_.query(z.reshape(1), k=det.k)
-        nb = det.X_train_[idx.ravel()].ravel()
-        nb = nb[nb > 0]
-        if len(nb) < 5:
-            scores_igad[i] = np.inf
-            continue
-        try:
-            tl = GammaFamily.mle(nb)
-            scores_igad[i] = det.R_ref_ - scalar_curvature(GammaFamily.log_partition, tl)
-        except Exception:
-            scores_igad[i] = np.inf
+    n_batches_normal = 100
+    n_batches_anomaly = 50
+    batch_size = 200
 
-    fm = np.isfinite(scores_igad)
-    if not all(fm):
-        mx = np.max(scores_igad[fm]) if any(fm) else 0
-        scores_igad[~fm] = mx * 2
-    auc_igad = roc_auc_score(y_true, scores_igad)
+    scores = []
+    labels = []
 
-    try:
-        ee = EllipticEnvelope(contamination=0.1)
-        ee.fit(X_normal.reshape(-1, 1))
-        sm = -ee.score_samples(X_test.reshape(-1, 1))
-        auc_mahal = roc_auc_score(y_true, sm)
-    except Exception:
-        auc_mahal = 0.5
+    print("Computing curvature for %d normal batches..." % n_batches_normal)
+    for b in range(n_batches_normal):
+        batch = rng.gamma(alpha_ref, 1.0 / beta_ref, size=batch_size)
+        theta_local = GammaFamily.mle(batch)
+        R_local = scalar_curvature(GammaFamily.log_partition, theta_local)
+        scores.append(abs(R_ref - R_local))
+        labels.append(0)
 
-    mu, sig = np.mean(X_normal), np.std(X_normal)
-    sz = np.abs(X_test - mu) / sig
-    auc_z = roc_auc_score(y_true, sz)
+    alpha_anom, beta_anom = 1.5, 0.5
+    print("Computing curvature for %d anomalous batches..." % n_batches_anomaly)
+    print("Anomaly:  Gamma(1.5,0.5) mean=3.00 skew=1.633")
+    for b in range(n_batches_anomaly):
+        batch = rng.gamma(alpha_anom, 1.0 / beta_anom, size=batch_size)
+        theta_local = GammaFamily.mle(batch)
+        R_local = scalar_curvature(GammaFamily.log_partition, theta_local)
+        scores.append(abs(R_ref - R_local))
+        labels.append(1)
 
+    scores = np.array(scores)
+    labels = np.array(labels)
+    auc_igad = roc_auc_score(labels, scores)
+
+    # Baseline: batch mean shift
+    scores_mean = []
+    rng2 = np.random.default_rng(seed)
+    ref_mean = alpha_ref / beta_ref
+    ref_std = np.sqrt(alpha_ref) / beta_ref
+    for b in range(n_batches_normal):
+        batch = rng2.gamma(alpha_ref, 1.0 / beta_ref, size=batch_size)
+        scores_mean.append(abs(np.mean(batch) - ref_mean) / ref_std)
+    for b in range(n_batches_anomaly):
+        batch = rng2.gamma(alpha_anom, 1.0 / beta_anom, size=batch_size)
+        scores_mean.append(abs(np.mean(batch) - ref_mean) / ref_std)
+    auc_mean = roc_auc_score(labels, scores_mean)
+
+    # Baseline: batch variance shift
+    scores_var = []
+    rng3 = np.random.default_rng(seed)
+    ref_var = alpha_ref / (beta_ref * beta_ref)
+    for b in range(n_batches_normal):
+        batch = rng3.gamma(alpha_ref, 1.0 / beta_ref, size=batch_size)
+        scores_var.append(abs(np.var(batch) - ref_var))
+    for b in range(n_batches_anomaly):
+        batch = rng3.gamma(alpha_anom, 1.0 / beta_anom, size=batch_size)
+        scores_var.append(abs(np.var(batch) - ref_var))
+    auc_var = roc_auc_score(labels, scores_var)
+
+    # Baseline: batch skewness shift
+    from scipy.stats import skew as sp_skew
+    scores_skew = []
+    rng4 = np.random.default_rng(seed)
+    ref_skew = 2.0 / np.sqrt(alpha_ref)
+    for b in range(n_batches_normal):
+        batch = rng4.gamma(alpha_ref, 1.0 / beta_ref, size=batch_size)
+        scores_skew.append(abs(sp_skew(batch) - ref_skew))
+    for b in range(n_batches_anomaly):
+        batch = rng4.gamma(alpha_anom, 1.0 / beta_anom, size=batch_size)
+        scores_skew.append(abs(sp_skew(batch) - ref_skew))
+    auc_skew = roc_auc_score(labels, scores_skew)
+
+    # Results
     print()
-    hdr = "Method" + " " * 19 + "AUC-ROC"
-    print(hdr)
-    print("-" * 37)
-    results = [("IGAD (curvature)", auc_igad), ("Mahalanobis", auc_mahal), ("Z-score", auc_z)]
-    for name, auc in results:
-        print("%-25s %10.4f" % (name, auc))
+    print("%-30s %10s" % ("Method", "AUC-ROC"))
+    print("-" * 42)
+    for name, auc in [("IGAD (curvature)", auc_igad),
+                      ("Batch mean shift", auc_mean),
+                      ("Batch variance shift", auc_var),
+                      ("Batch skewness shift", auc_skew)]:
+        print("%-30s %10.4f" % (name, auc))
 
-    fig, axes = plt.subplots(1, 3, figsize=(15, 4))
-    axes[0].hist(X_normal, bins=40, alpha=0.6, label="Normal", density=True)
-    axes[0].hist(X_anomaly, bins=20, alpha=0.6, label="Anomaly", density=True)
-    axes[0].set_title("Data Distributions")
+    # Diagnostics
+    print()
+    print("Curvature diagnostics:")
+    print("  R(reference)       = %.6f" % R_ref)
+    theta_anom = GammaFamily.to_natural(alpha_anom, beta_anom)
+    R_anom = scalar_curvature(GammaFamily.log_partition, theta_anom)
+    print("  R(anomaly truth)   = %.6f" % R_anom)
+    print("  |R_ref - R_anom|   = %.6f" % abs(R_ref - R_anom))
+
+    # Plot
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+    n_scores = scores[:n_batches_normal]
+    a_scores = scores[n_batches_normal:]
+    axes[0].hist(n_scores, bins=30, alpha=0.6, label="Normal", density=True)
+    axes[0].hist(a_scores, bins=15, alpha=0.6, label="Anomaly", density=True)
+    axes[0].set_title("IGAD Score (AUC=%.3f)" % auc_igad)
+    axes[0].set_xlabel("|R_ref - R_local|")
     axes[0].legend()
-    axes[1].scatter(range(len(scores_igad)), scores_igad, c=y_true, cmap="coolwarm", alpha=0.6, s=15)
-    axes[1].set_title("IGAD Scores (AUC=%.3f)" % auc_igad)
-    axes[2].scatter(range(len(sz)), sz, c=y_true, cmap="coolwarm", alpha=0.6, s=15)
-    axes[2].set_title("Z-Score (AUC=%.3f)" % auc_z)
+
+    n_sk = scores_skew[:n_batches_normal]
+    a_sk = scores_skew[n_batches_normal:]
+    axes[1].hist(n_sk, bins=30, alpha=0.6, label="Normal", density=True)
+    axes[1].hist(a_sk, bins=15, alpha=0.6, label="Anomaly", density=True)
+    axes[1].set_title("Skewness Shift (AUC=%.3f)" % auc_skew)
+    axes[1].set_xlabel("|skew - skew_ref|")
+    axes[1].legend()
+
     plt.tight_layout()
     plt.savefig("igad_demo.png", dpi=150)
     print()
     print("Plot saved to igad_demo.png")
+
 
 if __name__ == "__main__":
     run_demo()
