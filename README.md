@@ -340,9 +340,6 @@ model misspecification degradation.
 
 ---
 
----
-
-
 ## References
 
 - Rao, C.R. (1945). Information and the accuracy attainable in the
