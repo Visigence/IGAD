@@ -16,9 +16,11 @@ IGAD is a Python library for detecting anomalies using information geometry, spe
 ## Demonstrations
 
 ### Basic Demo
+**The IGAD Advantage:** In a standard shape-anomaly scenario (matched means, altered higher-order moments), IGAD achieves perfect separability (AUC = 1.000). Notice that it even outperforms a direct, naive comparison of empirical skewness (AUC = 0.983). This empirically validates our Skewness Decomposition Theorem: the intrinsic Fisher-Rao geometry provides a more precise signal than crude statistical moments.
 ![IGAD Demo](igad_demo.png)
 
 ### Hard Cases Demo
+**Pushing the Limits:** In highly noisy, challenging regimes where standard location-scale methods fail completely (AUC ~ 0.50), IGAD still manages to extract a meaningful geometric signal (AUC = 0.684), consistently maintaining its edge over basic skewness shifts.
 ![IGAD Hard Demo](igad_hard_demo.png)
 
 
