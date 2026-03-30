@@ -226,9 +226,9 @@ def run_hard_demo():
     axes[2].legend()
 
     plt.tight_layout()
-    plt.savefig("igad_hard_demo.png", dpi=150)
+    plt.savefig("docs/figures/exp2_hard_gamma_vs_lognormal.png", dpi=150)
     print()
-    print("Plot saved to igad_hard_demo.png")
+    print("Plot saved to docs/figures/exp2_hard_gamma_vs_lognormal.png")
     print()
     print("Interpretation key:")
     print("  IGAD > MLE-skewness  →  the curvature geometry is doing real work")

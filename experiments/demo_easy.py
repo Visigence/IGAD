@@ -126,7 +126,7 @@ def run_demo(seed=42):
     plt.tight_layout()
     plt.savefig("docs/figures/exp1_easy_gamma_vs_gamma.png", dpi=150)
     print()
-    print("Plot saved to igad_demo.png")
+    print("Plot saved to docs/figures/exp1_easy_gamma_vs_gamma.png")
 
 
 if __name__ == "__main__":
