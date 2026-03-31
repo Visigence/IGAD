@@ -162,8 +162,8 @@ Gamma(8,2) vs LogNormal · mean=4.0, var=2.0 **identical** for both
 | IGAD (curvature)        | 0.6542   | 0.047 |
 | MLE skewness [CONTROL]  | 0.6016   | 0.038 |
 | Raw skewness            | 0.6794   | 0.072 |
-| MMD (RBF, median-BW)    | —        | —     |
-| Wasserstein (1D)        | —        | —     |
+| MMD (RBF, median-BW)    | 0.5894   | 0.076 |
+| Wasserstein (1D)        | 0.5925   | 0.057 |
 | Mean shift [BLIND]      | 0.5240   | 0.062 |
 | Variance shift [BLIND]  | 0.5818   | 0.027 |
 
@@ -198,14 +198,15 @@ has a theoretical advantage over non-parametric baselines.
 Both sum to 12.0 — mean direction identical, only concentration profile shifts.
 
 **Sample-efficiency sweep (fixed Δα, n is the sole IV)**
-
-| n   | IGAD | MMD  | Wasserstein |
-|-----|------|------|-------------|
-| 20  | —    | —    | —           |
-| 50  | —    | —    | —           |
-| 100 | —    | —    | —           |
-| 200 | —    | —    | —           |
-| 500 | —    | —    | —           |
+Note: MMD and Wasserstein dominate here because the chosen pair 
+includes a mean shift. The clean cross-family result is Experiment 4.
+| n   | IGAD   | MMD    | Wasserstein |
+|-----|--------|--------|-------------|
+| 20  | 0.7540 | 0.9998 | 1.0000      |
+| 50  | 0.9074 | 1.0000 | 1.0000      |
+| 100 | 0.9302 | 1.0000 | 1.0000      |
+| 200 | 0.9822 | 1.0000 | 1.0000      |
+| 500 | 0.9878 | 1.0000 | 1.0000      |
 
 > Run `python experiments/demo_dirichlet.py` to populate this table.
 
