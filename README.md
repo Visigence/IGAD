@@ -57,12 +57,12 @@ at the natural parameter point `theta`.
 The **construction**: using scalar curvature deviation as a batch-level anomaly 
 score. This use has not been found in the anomaly detection literature.
 
-The closest related work (CurvGAD, ICML 2025) applies Ricci curvature to graph 
-structures — a fundamentally different construction. Ricci curvature measures 
-how edges in a graph bend. Fisher-Rao scalar curvature measures how the space 
-of probability distributions itself bends at a given parameter point. One 
-operates on data topology. The other operates on the geometry of the 
-statistical model.
+The closest known related work in anomaly detection applies Ricci curvature 
+to graph structures — a fundamentally different construction. Ricci curvature 
+measures how edges in a graph bend. Fisher-Rao scalar curvature measures how 
+the space of probability distributions itself bends at a given parameter point. 
+One operates on data topology. The other operates on the geometry of the 
+statistical model itself.
 
 The **insight**: scalar curvature is governed by `||T||²_g` — a full 
 metric-weighted contraction of the third cumulant tensor across all parameter 
