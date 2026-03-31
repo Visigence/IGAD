@@ -100,7 +100,7 @@ Full derivation with attribution: `docs/proof.md`
 igad/
   curvature.py          Fisher metric, third cumulant tensor, scalar curvature
   families.py           GammaFamily, PoissonFamily, DirichletFamily
-  detector.py           IGADDetector (batch-level scoring)
+  detector.py           IGADDetector.score_batch() — batch-level IGAD score
   exceptions.py         ConvergenceError (MLE convergence gate)
 tests/
   test_curvature.py         12 validation tests (Gamma/Poisson)
@@ -192,8 +192,10 @@ Curvature geometry adds signal **beyond** MLE efficiency alone.
 | 300 | 0.6395 | 0.6074 | 0.5933      | +0.032        |
 | 500 | 0.7150 | 0.6814 | 0.6777      | **+0.034**    |
 
-IGAD beats MMD and Wasserstein at every batch size tested.  
-mean and variance are **exactly identical** between reference and anomaly.
+IGAD beats both MMD and Wasserstein at every batch size tested (n ∈ {50, 100, 200, 300, 500}).  
+Mean and variance are **exactly identical** between reference and anomaly in all runs.  
+Note: raw skewness dominates at large n (n=500, seed=42: raw-skew AUC=0.919 vs IGAD=0.675);  
+IGAD's advantage is over distance-based baselines, not moment estimators.
 
 ---
 
@@ -209,8 +211,12 @@ Setup: α_ref = [4, 4, 4] vs α_anom = [1.5, 4, 6.5] — both sum to 12.0
 | 200 | 0.9822 | 1.0000 | 1.0000      |
 | 500 | 0.9878 | 1.0000 | 1.0000      |
 
-Note: MMD dominates here because the pair includes a mean shift.  
-The clean cross-family result is Experiment 2.
+Note: The Dirichlet pair used here (α=[4,4,4] vs α=[1.5,4,6.5]) includes a marginal  
+mean shift — the component means change when α is non-uniform. MMD and Wasserstein  
+dominate because they directly detect this mean shift. This experiment validates  
+that IGAD's curvature is non-zero and non-constant on the Dirichlet manifold;  
+it does not test the pure concentration-shift regime. The clean cross-family result  
+(matched mean AND variance) is Experiment 2.
 
 ---
 
