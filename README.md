@@ -3,10 +3,8 @@
 **Author:** Omry Damari · 2026  
 **Repository:** https://github.com/Visigence/IGAD
 
-> *"The anomaly isn't where the distribution is. It's what shape it is"*
-
-Classical anomaly detectors are blind to shape shifts — anomalies that preserve 
-mean and variance but change distributional geometry. IGAD detects them.
+Classical anomaly detectors are blind to shape shifts — anomalies that 
+preserve mean and variance but change distributional geometry. IGAD detects them.
 
 ---
 
@@ -284,5 +282,5 @@ TestGammaFamily             (12)   — existing suite, all passing
 This project is licensed under the [MIT License](LICENSE).
 
 ---
-
+> *"The anomaly isn't where the distribution is. It's what shape it is."*  
 >  Omry Damari, 2026
