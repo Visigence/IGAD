@@ -203,6 +203,13 @@ R is constant regardless of parameter choice — empirically verified:
     R(ρ=0.8) = 1.996700
     |ΔR|     = 0.003308  — numerical noise only, not a real signal
 
+Note: The positive value (~2.0) reflects the sign convention of the scalar curvature
+formula implemented in curvature.py (R = 1/4(||S||²_g − ||T||²_g)). The standard
+differential geometry convention for the Gaussian Fisher-Rao manifold yields negative
+curvature (it is isometric to a hyperbolic space). The sign convention does not affect
+IGAD's correctness — what matters is that |R_ref − R_local| ≈ 0 for all Gaussian
+parameter choices, which is confirmed above.
+
 Consequence: |R_ref − R_local| ≈ 0 for all Gaussian parameter choices.
 IGAD cannot detect any Gaussian-to-Gaussian shift.
 

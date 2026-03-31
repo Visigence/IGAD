@@ -123,7 +123,12 @@ information through the curvature tensor.
 
 ## The Falsifiable Claim
 
-IGAD's advantage over MLE-derived skewness (same MLE, no geometry) confirms
-that the scalar curvature — through full contraction of the third cumulant
-tensor ||T||²_g — extracts shape information not captured by any single
-moment, whether raw or MLE-fitted. This holds in the regime n=200-500.
+IGAD's advantage over the MLE-skewness control (same MLE fit, no curvature tensor)
+confirms that the scalar curvature — through full contraction of the third cumulant
+tensor ||T||²_g — extracts shape information beyond what MLE-derived moments alone
+capture. This holds consistently in the regime n=200–500 (gap: +0.053 to +0.090).
+
+Note: Raw skewness (computed directly from sample moments) outperforms IGAD at
+large n (n=500, seed=42: 0.919 vs 0.675) because it requires no parametric
+assumption and benefits fully from the larger sample. IGAD's geometric advantage
+is over distance-based and MLE-moment baselines, not over all possible estimators.
