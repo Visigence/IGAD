@@ -208,6 +208,7 @@ def run_sample_efficiency_sweep():
         print("%-6d  %8.4f  %8.4f  %8.4f  %+8.4f" % (n, igad, mmd, wass, igad - mmd))
 
     print()
-    if __name__ == "__main__":
+
+if __name__ == "__main__":
     run_hard_extended()
     run_sample_efficiency_sweep()
