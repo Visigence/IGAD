@@ -186,6 +186,28 @@ def run_hard_extended():
         print("→ MLE efficiency explains the advantage. Geometry adds nothing here.")
     print()
 
+def run_sample_efficiency_sweep():
+    N_SWEEP   = [50, 100, 200, 300, 500]
+    N_NORMAL  = 100
+    N_ANOMALY = 50
+    SEEDS     = [42, 7, 123, 999, 2024]
 
-if __name__ == "__main__":
+    print("=" * 65)
+    print("Sample-Efficiency Sweep: Gamma vs LogNormal (FIXED signal)")
+    print("=" * 65)
+    print("mean=4.0, var=2.0 identical. n is the ONLY variable.")
+    print()
+    print("%-6s  %8s  %8s  %8s  %8s" % ("n", "IGAD", "MMD", "Wasserstein", "Gap(I-M)"))
+    print("-" * 50)
+
+    for n in N_SWEEP:
+        results = [_scores_one_seed(s, n, N_NORMAL, N_ANOMALY) for s in SEEDS]
+        igad = np.mean([r["igad"] for r in results])
+        mmd  = np.mean([r["mmd"]  for r in results])
+        wass = np.mean([r["wass"] for r in results])
+        print("%-6d  %8.4f  %8.4f  %8.4f  %+8.4f" % (n, igad, mmd, wass, igad - mmd))
+
+    print()
+    if __name__ == "__main__":
     run_hard_extended()
+    run_sample_efficiency_sweep()
