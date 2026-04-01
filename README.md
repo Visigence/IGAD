@@ -125,6 +125,7 @@ tests/
 experiments/
   demo_easy.py              Experiment 1: Gamma vs Gamma
   demo_hard.py              Experiment 2: Gamma vs LogNormal + MLE control
+  demo_hard1.py             Experiment 3b: Within-family Gamma vs Gamma (same mean, variance shift)
   demo_dirichlet.py         Experiment 3: Dirichlet concentration shifts
   demo_hard_extended.py     Experiment 4: Gamma vs LogNormal + MMD + Wasserstein
   demo_gaussian2d.py        Experiment 5: Gaussian failure mode (documented)
@@ -157,7 +158,7 @@ print(f"IGAD score: {score:.6f}")  # Higher = more anomalous
 ## Running Tests
 ```bash
 python -m pytest tests/ -v
-# 46 passed
+# 51 passed
 ```
 
 ---
@@ -278,15 +279,16 @@ See `docs/operational_envelope.md` for falsifiable claims.
 
 ## Validation
 ```
-46 passed
+51 passed
 
 TestDirichletLogPartition    (4)   — log-partition identity, convexity, roundtrip
 TestDirichletFisherMetric    (5)   — matches numerical Hessian, PD, k=4
 TestDirichletCurvature       (4)   — finite, non-constant, separates anomaly pair
 TestDirichletMLE             (5)   — recovery rtol=0.05, convergence gate
-TestIGADSampleEfficiency     (4)   — AUC>0.65 at n=200, monotone in n
+TestIGADDirichletDetection   (4)   — AUC>0.65 at n=200, monotone in n
 TestFailureModes             (3)   — Poisson R≡0, Gaussian constant, k=2 degenerate
 TestGammaFamily             (12)   — existing suite, all passing
+TestIGADDetector             (5)   — score API, predict, zero-score self, positive on anomaly
 ```
 
 ---
