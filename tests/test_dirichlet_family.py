@@ -246,10 +246,19 @@ class TestDirichletMLE:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Class 5 — IGAD sample efficiency
+# Class 5 — IGAD Dirichlet detection
 # ─────────────────────────────────────────────────────────────────────────────
 
-class TestIGADSampleEfficiency:
+class TestIGADDirichletDetection:
+    """
+    Validates that IGAD detects Dirichlet concentration shifts via curvature deviation.
+
+    Test pair: Dirichlet([4,4,4]) vs Dirichlet([1.5,4,6.5]).
+    Note: This pair includes a marginal mean shift, so MMD and Wasserstein
+    also perform well. These tests verify IGAD's absolute detection capability
+    (AUC > 0.65 at n=200), not a claim of superiority over non-parametric baselines.
+    The clean cross-family regime where IGAD uniquely wins is Experiment 2 (demo_hard.py).
+    """
 
     def _auc_for_n(self, n, seed=42, n_normal=100, n_anomaly=50):
         """Compute IGAD AUC for Dirichlet(4,4,4) vs (1.5,4,6.5) at batch size n."""
@@ -351,18 +360,42 @@ class TestFailureModes:
 
     def test_dirichlet_1d_is_degenerate(self):
         """
-        k=2 Dirichlet is a Beta — 1-parameter family after fixing α₀.
-        Scalar curvature should be effectively zero or constant.
+        k=2 Dirichlet is a Beta distribution — a 2-parameter family.
+        The operational_envelope.md documents this as a boundary/degenerate case
+        for IGAD: curvature is well-defined and finite but varies non-trivially
+        across Beta parameter values (range > 0.1), meaning there is no
+        discriminative near-zero or constant-curvature signal. IGAD requires k >= 3
+        for reliable anomaly detection.
+
+        We verify this by computing R across several Beta parameter pairs and
+        confirming:
+        1. All values are finite (the formula is well-behaved for k=2).
+        2. The range is non-trivial (> 0.1), documenting that curvature varies
+           significantly — the failure mode is NOT constancy but insufficient
+           structure for the k >= 3 operational envelope.
         """
-        # For k=2, the Fisher-Rao manifold of Beta is 2D but the constrained
-        # 1-parameter slice (fixing alpha_0) has zero intrinsic curvature.
-        # We verify that scalar_curvature is well-defined for k=2.
-        alpha = np.array([2.0, 3.0])
-        theta = DirichletFamily.to_natural(alpha)
-        R = scalar_curvature(DirichletFamily.log_partition, theta)
-        # For a 2-parameter family, the curvature formula is valid;
-        # we just check it's finite and well-behaved.
-        assert np.isfinite(R), "k=2 Dirichlet curvature should be finite"
+        alphas = [
+            [2.0, 3.0],
+            [1.0, 4.0],
+            [5.0, 2.0],
+            [0.5, 1.5],
+            [3.0, 3.0],
+        ]
+        R_vals = []
+        for alpha in alphas:
+            theta = DirichletFamily.to_natural(np.array(alpha))
+            R = scalar_curvature(DirichletFamily.log_partition, theta)
+            assert np.isfinite(R), (
+                "k=2 Dirichlet curvature should be finite for alpha=%s" % alpha
+            )
+            R_vals.append(R)
+
+        R_range = max(R_vals) - min(R_vals)
+        assert R_range > 0.1, (
+            "k=2 Dirichlet curvature should vary non-trivially across Beta parameters "
+            "(documents that the failure mode is insufficient structure, not constancy); "
+            "range=%.6f across %s" % (R_range, alphas)
+        )
 
 
 if __name__ == "__main__":

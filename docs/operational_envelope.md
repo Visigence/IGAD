@@ -87,7 +87,7 @@ prefer ensemble approaches combining IGAD (for small n) with MMD or Wasserstein
 
 2. **IGAD AUC > 0.65 at n=200** for Dirichlet k=3 concentration shift
    (Dirichlet(4,4,4) vs Dirichlet(1.5,4,6.5), seed=42, 100 normal + 50 anomaly batches).
-   Verified in `tests/test_dirichlet_family.py::TestIGADSampleEfficiency`.
+   Verified in `tests/test_dirichlet_family.py::TestIGADDirichletDetection`.
 
 3. **IGAD AUC > MMD at n <= 100** for Dirichlet k=3 concentration shift
    (sample efficiency regime). Verified empirically in `experiments/demo_dirichlet.py`
