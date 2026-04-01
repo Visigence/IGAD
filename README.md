@@ -1,9 +1,11 @@
 # IGAD: Information-Geometric Anomaly Detection
 
-**Author:** Omry Damari · 2026  
+**Author:** Omry Damari · 2026
 **Repository:** https://github.com/Visigence/IGAD
 
-Classical anomaly detectors are blind to shape shifts — anomalies that 
+🌐 **[Interactive Demo & Paper →](https://igad-web.vercel.app)**
+
+Classical anomaly detectors are blind to shape shifts — anomalies that
 preserve mean and variance but change distributional geometry. IGAD detects them.
 
 ---
@@ -27,8 +29,20 @@ Reference : Gamma(8, 2)    mean=4.000  var=2.000  skew=0.707
 Anomaly   : LogNormal(...)  mean=4.000  var=2.000  skew=1.105
 ```
 
-Mean and variance are exactly identical. The internal structure of the 
+Mean and variance are exactly identical. The internal structure of the
 distribution has completely changed. No distance-based algorithm detects this.
+
+---
+
+## Interactive Web Demo
+
+**[→ igad-web.vercel.app](https://igad-web.vercel.app)**
+
+The web demo includes:
+- **Live curvature explorer** — drag the Gamma shape parameter α and watch scalar curvature R(θ) change in real time
+- **Real PDF visualization** — exact Gamma(8,2) vs moment-matched LogNormal computed from mathematical definitions
+- **Full results & charts** — sample-efficiency sweep, comparison tables, annotated plots
+- **Paper access** — [read the full paper (PDF)](https://github.com/Visigence/IGAD/blob/main/Igad_paper.pdf)
 
 ---
 
@@ -39,7 +53,7 @@ The novel contribution of this work is a single construction:
 IGAD(batch) = |R(theta_ref) - R(theta_local)|
 ```
 
-where `R(theta)` is the scalar curvature of the Fisher-Rao statistical manifold 
+where `R(theta)` is the scalar curvature of the Fisher-Rao statistical manifold
 at the natural parameter point `theta`.
 
 ### What Was Known Before This Work
@@ -54,27 +68,27 @@ at the natural parameter point `theta`.
 
 ### What Is New
 
-The **construction**: using scalar curvature deviation as a batch-level anomaly 
+The **construction**: using scalar curvature deviation as a batch-level anomaly
 score. This use has not been found in the anomaly detection literature.
 
-The closest known related work in anomaly detection applies Ricci curvature 
-to graph structures — a fundamentally different construction. Ricci curvature 
-measures how edges in a graph bend. Fisher-Rao scalar curvature measures how 
-the space of probability distributions itself bends at a given parameter point. 
-One operates on data topology. The other operates on the geometry of the 
+The closest known related work in anomaly detection applies Ricci curvature
+to graph structures — a fundamentally different construction. Ricci curvature
+measures how edges in a graph bend. Fisher-Rao scalar curvature measures how
+the space of probability distributions itself bends at a given parameter point.
+One operates on data topology. The other operates on the geometry of the
 statistical model itself.
 
-The **insight**: scalar curvature is governed by `||T||²_g` — a full 
-metric-weighted contraction of the third cumulant tensor across all parameter 
-dimensions simultaneously. This is not skewness. Skewness is a single number. 
-`||T||²_g` is a tensor contraction that weights each direction by the inverse 
-Fisher metric — it captures how asymmetry is distributed across the entire 
+The **insight**: scalar curvature is governed by `||T||²_g` — a full
+metric-weighted contraction of the third cumulant tensor across all parameter
+dimensions simultaneously. This is not skewness. Skewness is a single number.
+`||T||²_g` is a tensor contraction that weights each direction by the inverse
+Fisher metric — it captures how asymmetry is distributed across the entire
 parameter geometry. No scalar moment captures this.
 
-The **proof**: a control experiment with identical MLE fit but no curvature 
+The **proof**: a control experiment with identical MLE fit but no curvature
 tensor confirms the geometry adds +0.053 AUC independently of MLE efficiency.
 
-The **result**: IGAD beats MMD and Wasserstein when mean and variance are 
+The **result**: IGAD beats MMD and Wasserstein when mean and variance are
 held exactly identical — the regime where every distance-based method is blind.
 
 ---
@@ -158,7 +172,7 @@ Gamma(9,3) vs Gamma(1.5,0.5) · same mean (3.0), different variance and skewness
 | Skewness shift   | 0.9834  |
 | Mean shift       | 0.8150  |
 
-IGAD achieves perfect separation. Variance baseline also reaches 1.0 because 
+IGAD achieves perfect separation. Variance baseline also reaches 1.0 because
 variance differs by 6×. This experiment does not prove unique value.
 
 ---
@@ -166,6 +180,8 @@ variance differs by 6×. This experiment does not prove unique value.
 ### Experiment 2 — Hard Case (Gamma vs LogNormal)
 
 Gamma(8,2) vs LogNormal · mean=4.0, var=2.0 **identical** for both
+
+**[→ See interactive visualization](https://igad-web.vercel.app#results)**
 
 **Results — 5 seeds, batch_size=200**
 
@@ -179,7 +195,7 @@ Gamma(8,2) vs LogNormal · mean=4.0, var=2.0 **identical** for both
 | Mean shift [BLIND]      | 0.5240   | 0.062 |
 | Variance shift [BLIND]  | 0.5818   | 0.027 |
 
-**Gap (IGAD − MLE skewness): +0.053**  
+**Gap (IGAD − MLE skewness): +0.053**
 Curvature geometry adds signal **beyond** MLE efficiency alone.
 
 **Sample-efficiency sweep — IGAD vs MMD vs Wasserstein (fixed signal)**
@@ -192,9 +208,9 @@ Curvature geometry adds signal **beyond** MLE efficiency alone.
 | 300 | 0.6395 | 0.6074 | 0.5933      | +0.032        |
 | 500 | 0.7150 | 0.6814 | 0.6777      | **+0.034**    |
 
-IGAD beats both MMD and Wasserstein at every batch size tested (n ∈ {50, 100, 200, 300, 500}).  
-Mean and variance are **exactly identical** between reference and anomaly in all runs.  
-Note: raw skewness dominates at large n (n=500, seed=42: raw-skew AUC=0.919 vs IGAD=0.675);  
+IGAD beats both MMD and Wasserstein at every batch size tested (n ∈ {50, 100, 200, 300, 500}).
+Mean and variance are **exactly identical** between reference and anomaly in all runs.
+Note: raw skewness dominates at large n (n=500, seed=42: raw-skew AUC=0.919 vs IGAD=0.675);
 IGAD's advantage is over distance-based baselines, not moment estimators.
 
 ---
@@ -211,18 +227,18 @@ Setup: α_ref = [4, 4, 4] vs α_anom = [1.5, 4, 6.5] — both sum to 12.0
 | 200 | 0.9822 | 1.0000 | 1.0000      |
 | 500 | 0.9878 | 1.0000 | 1.0000      |
 
-Note: The Dirichlet pair used here (α=[4,4,4] vs α=[1.5,4,6.5]) includes a marginal  
-mean shift — the component means change when α is non-uniform. MMD and Wasserstein  
-dominate because they directly detect this mean shift. This experiment validates  
-that IGAD's curvature is non-zero and non-constant on the Dirichlet manifold;  
-it does not test the pure concentration-shift regime. The clean cross-family result  
+Note: The Dirichlet pair used here (α=[4,4,4] vs α=[1.5,4,6.5]) includes a marginal
+mean shift — the component means change when α is non-uniform. MMD and Wasserstein
+dominate because they directly detect this mean shift. This experiment validates
+that IGAD's curvature is non-zero and non-constant on the Dirichlet manifold;
+it does not test the pure concentration-shift regime. The clean cross-family result
 (matched mean AND variance) is Experiment 2.
 
 ---
 
 ### Experiment 4 — Gaussian Failure Mode (Honest Limitation)
 
-The Gaussian manifold has **constant** scalar curvature (isometric to hyperbolic 
+The Gaussian manifold has **constant** scalar curvature (isometric to hyperbolic
 space). IGAD adds nothing to Gaussian anomaly detection. Documented and tested.
 
 ---
@@ -272,6 +288,19 @@ TestGammaFamily             (12)   — existing suite, all passing
 
 ---
 
+## Citation
+```bibtex
+@article{damari2026igad,
+  title   = {IGAD: Information-Geometric Anomaly Detection via Scalar
+             Curvature of Fisher-Rao Manifolds},
+  author  = {Damari, Omry},
+  year    = {2026},
+  url     = {https://github.com/Visigence/IGAD}
+}
+```
+
+---
+
 ## References
 
 1. Rao, C.R. (1945). Information and the accuracy attainable in the estimation of statistical parameters.
@@ -288,5 +317,5 @@ TestGammaFamily             (12)   — existing suite, all passing
 This project is licensed under the [MIT License](LICENSE).
 
 ---
-> *"The anomaly isn't where the distribution is. It's what shape it is."*  
->  Omry Damari, 2026
+> *"The anomaly isn't where the distribution is. It's what shape it is."*
+> Omry Damari, 2026
