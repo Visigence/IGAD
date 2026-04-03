@@ -1,18 +1,13 @@
 """
 IGAD: Information-Geometric Anomaly Detection.
-
 Anomaly score = |R(theta_ref) - R(theta_batch)|
-
 where R is the scalar curvature of the Fisher-Rao manifold,
 theta_ref is the MLE fitted to reference data, and
 theta_batch is the MLE fitted to the incoming batch.
-
 Reference: Damari, O. (2026). IGAD: Information-Geometric Anomaly Detection
            via scalar curvature of Fisher-Rao manifolds.
 """
-
 import numpy as np
-
 from .curvature import scalar_curvature
 
 
@@ -21,7 +16,6 @@ class IGADDetector:
     Information-Geometric Anomaly Detector.
 
     The anomaly score for a batch z is:
-
         IGAD(z) = |R(theta_ref) - R(theta_batch)|
 
     where:
@@ -43,7 +37,6 @@ class IGADDetector:
     def fit(self, X: np.ndarray) -> "IGADDetector":
         """
         Fit reference distribution from training data.
-
         Computes and caches theta_ref = MLE(X) and R_ref = R(theta_ref).
 
         Parameters
@@ -58,7 +51,7 @@ class IGADDetector:
         X = np.asarray(X, dtype=np.float64)
         self.theta_ref_ = self.family.mle(X)
         self.R_ref_ = scalar_curvature(
-            self.family.log_partition, self.theta_ref_
+            self.family.log_partition, self.theta_ref_, family=self.family
         )
         return self
 
@@ -86,10 +79,14 @@ class IGADDetector:
             If fit() has not been called.
         """
         if self.theta_ref_ is None:
-            raise RuntimeError("IGADDetector.fit() must be called before score_batch().")
+            raise RuntimeError(
+                "IGADDetector.fit() must be called before score_batch()."
+            )
         X = np.asarray(X, dtype=np.float64)
         theta_batch = self.family.mle(X)
-        R_batch = scalar_curvature(self.family.log_partition, theta_batch)
+        R_batch = scalar_curvature(
+            self.family.log_partition, theta_batch, family=self.family
+        )
         return float(abs(self.R_ref_ - R_batch))
 
     def predict(self, X: np.ndarray, threshold: float) -> int:
