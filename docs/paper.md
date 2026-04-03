@@ -357,7 +357,23 @@ results use actual AUC-ROC values with 95% bootstrap confidence intervals.
 Statistical tests use paired sign-permutation tests with 10,000
 permutations, one-sided H₁: IGAD > baseline.
 
-### 5.1 Experiment 2: Gamma(8,2) vs LogNormal — Matched Mean and Variance
+**Validation status** (run 2026-04-03 against current codebase):
+
+| Experiment | Script | Data | Status |
+|---|---|---|---|
+| Exp 2 — Gamma vs LogNormal | `experiments/demo_hard.py` | generated | ✅ VERIFIED |
+| Exp 6 — Gamma vs Weibull decisive | `experiments/exp_decisive.py` | generated | ✅ VERIFIED |
+| Exp 7 — Dirichlet decisive (k=3,4,5) | `experiments/exp_dirichlet_decisive.py` | generated | ✅ VERIFIED |
+| CWRU bearing fault | `experiments/cwru_data/igad_eval.py` | `.mat` files not in repo | ⚠️ UNVERIFIED |
+| ECG AFib | `experiments/mitbih/igad_ecg_v6.py` | PhysioNet afdb not in repo | ⚠️ UNVERIFIED |
+| Test suite | `python -m pytest tests/ -q` | — | ✅ 51 passed |
+
+Numbers for CWRU and ECG are reported as recorded by the original author;
+the data files required to reproduce them are not bundled with the
+repository (CWRU `.mat` files must be downloaded separately; ECG records
+require the PhysioNet afdb dataset).
+
+### 5.1 Experiment 2: Gamma(8,2) vs LogNormal — Matched Mean and Variance ✅ VERIFIED
 
 **Setup** (`experiments/demo_hard.py`): Reference Gamma(8,2) vs anomaly
 LogNormal(μ=1.327, σ=0.343). Both have mean=4.000 and var=2.000
@@ -411,7 +427,7 @@ of Section 4.3.
 
 See Figure: `docs/figures/exp2_hard_gamma_vs_lognormal.png`
 
-### 5.2 Experiment 6 (Decisive): Gamma(2,1) vs Weibull — Small-n Heavy-Tail Regime
+### 5.2 Experiment 6 (Decisive): Gamma(2,1) vs Weibull — Small-n Heavy-Tail Regime ✅ VERIFIED
 
 **Setup** (`experiments/exp_decisive.py`): Reference Gamma(α=2, β=1) —
 mean=2.0, var=2.0, skew=1.4142 (heavy-tailed). Anomaly: Weibull(k=1.4355,
@@ -483,7 +499,7 @@ noise relative to either moment-based estimator.
 
 See Figure: `docs/figures/exp_decisive_gamma_weibull.png`
 
-### 5.3 Dirichlet Experiments: Pure Concentration-Profile Shift
+### 5.3 Dirichlet Experiments: Pure Concentration-Profile Shift ✅ VERIFIED
 
 **Setup** (`experiments/exp_dirichlet_decisive.py`): To eliminate the
 mean-shift confound present in the original Dirichlet experiment
@@ -569,6 +585,12 @@ See Figures: `docs/figures/exp_dirichlet_decisive_k3_sym.png`,
 `docs/figures/exp_dirichlet_decisive_k5.png`
 
 ### 5.4 Real-World Validation: CWRU Bearing Fault and ECG AFib (Honest Negative Results)
+
+> **⚠️ UNVERIFIED (data not bundled):** The CWRU `.mat` files and
+> PhysioNet afdb records are not included in the repository. Numbers below
+> are as reported by the original author and cannot be reproduced without
+> downloading the external datasets. See `experiments/cwru_data/download_cwru.py`
+> for acquisition instructions.
 
 **CWRU bearing fault** (`experiments/cwru_data/igad_eval.py`). Normal
 bearing vs inner-race fault (0.007 inch), batch_size=200. Result: 3.51×
