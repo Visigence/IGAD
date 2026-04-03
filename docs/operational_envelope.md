@@ -124,23 +124,27 @@ prefer ensemble approaches combining IGAD (for small n) with MMD or Wasserstein
 
 ## Sample Complexity Analysis
 
-For a correctly-specified k-dimensional exponential family:
+For a correctly-specified k-dimensional exponential family, a formal proof of
+the sample complexity advantage is given in `docs/sample_complexity_proof.md`.
+The key results are:
 
-- **IGAD** requires O(n^{1/2}) samples to achieve AUC > 0.7 in the concentration-shift
-  regime. The curvature estimator converges at the rate of the MLE (Fisher-efficient),
-  and the signal (|ΔR|) is a fixed constant for a fixed Δα.
+- **IGAD** has sample complexity `O((σ_R / ΔR)²)` where `σ_R` is the
+  asymptotic standard deviation of the curvature estimator (finite under 5th
+  moment conditions) and `ΔR = |R(θ*) − R(θ₀)|` is the curvature gap to the
+  pseudo-true parameter. This follows from the delta method applied to the MLE,
+  which is Fisher-efficient and converges at rate `O(n^{−1/2})`.
 
-- **Non-parametric methods** (MMD, Wasserstein) require O(n) samples for equivalent
-  power, because their test statistics converge at the slower rate of the
-  empirical distribution (no parametric structure exploited).
+- **Non-parametric methods** (MMD, Wasserstein) require `O(1/MMD(P,Q)²)` and
+  `O(ε^{−d})` samples respectively, where `d` is the **ambient data
+  dimension**. Wasserstein is subject to the curse of dimensionality.
 
-- The advantage is O(n^{1/2}) — a sub-linear sample-efficiency gain from parametric
-  structure.
+- **The O(n^{1/2}) rate advantage** arises because IGAD operates in the
+  d-dimensional parameter space of the exponential family, not in the ambient
+  data space. The sample complexity is independent of ambient dimension.
 
-(The O(n^{1/2}) claim is empirically derived from the sweep in Experiment 4,
-`experiments/demo_dirichlet.py` Part 3. A formal proof requires analysis of the
-Fisher information matrix eigenspectrum and the curvature functional's gradient
-with respect to the natural parameters.)
+See `docs/sample_complexity_proof.md` §3–§4 for the full derivation, and §5
+for explicit calculations for Gamma and Dirichlet families including numerical
+power estimates for Exp 6 and Exp 7.
 
 ---
 
