@@ -48,3 +48,10 @@ experiments/cwru_data/*.mat
 
 # Paper draft — do not expose before publication
 Igad_paper.pdf
+
+# LaTeX build artifacts
+docs/*.aux
+docs/*.log
+docs/*.out
+docs/*.toc
+docs/*.pdf
