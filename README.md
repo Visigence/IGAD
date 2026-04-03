@@ -79,6 +79,12 @@ where S_m = g^{ab} T_{abm}  (trace vector)
 
 Full derivation: `docs/proof.md`
 
+**Sample complexity:** The MLE is Fisher-efficient, so R(θ̂_n) converges at
+rate O(n^{-1/2}) by the delta method. IGAD achieves 80% power when
+n ≥ (z_α + z_β)² · (σ_R / ΔR)², independent of ambient data dimension.
+Wasserstein requires O(ε^{-d}) samples in d-dimensional data. Formal proof
+with concrete Gamma and Dirichlet calculations: `docs/sample_complexity_proof.md`
+
 ---
 
 ## Implementation
@@ -107,6 +113,7 @@ exp_decisive.py               Experiment 6: Decisive test — Gamma vs Weibull (
 docs/
 proof.md                      Mathematical background and attribution
 operational_envelope.md       Falsifiable claims: when IGAD wins and loses
+sample_complexity_proof.md    Formal sample complexity proof (delta method, §3–§5)
 figures/                      Experiment plots
 RESULTS.md                      Full experimental results and analysis
 
