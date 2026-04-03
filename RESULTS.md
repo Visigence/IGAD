@@ -132,3 +132,43 @@ Note: Raw skewness (computed directly from sample moments) outperforms IGAD at
 large n (n=500, seed=42: 0.919 vs 0.675) because it requires no parametric
 assumption and benefits fully from the larger sample. IGAD's geometric advantage
 is over distance-based and MLE-moment baselines, not over all possible estimators.
+
+---
+
+## Experiment 4: Real-World Validation — CWRU Bearing Fault
+
+**File**: `experiments/cwru_data/igad_eval.py`
+**Setup**: Normal bearing vs inner race fault (0.007"), batch_size=200
+**Finding**: 3.51x mean shift dominates. IGAD AUC=0.76, Wasserstein=1.00.
+**Conclusion**: Fault changes signal amplitude, not distributional shape.
+Not the operational regime for IGAD. Documented in operational_envelope.
+
+---
+
+## Experiment 5: Real-World Validation — ECG AFib Detection
+
+**File**: `experiments/mitbih/igad_ecg_v6.py`
+**Dataset**: MIT-BIH Atrial Fibrillation Database (PhysioNet afdb)
+**Records**: 04015, 04043 | NSR=92,785 intervals, AFIB=14,940 intervals
+**Finding**: AFib in afdb includes 20% rate increase (mean ratio 0.804x).
+Mean shift AUC=0.89, IGAD AUC=0.60.
+**Conclusion**: Rate-changing AFib is a location-shift problem. Not the
+operational regime for IGAD.
+
+**Engineering contribution**: InverseGaussianFamily with analytical Fisher
+metric and third cumulant tensor — required for numerical stability at
+physiological parameter ranges (λ~10,000 → θ~-8,000).
+
+---
+
+## Operational Envelope (Updated)
+
+| Regime | IGAD | Reason |
+|---|---|---|
+| Mean+variance matched, cross-family shape shift | ✅ | Core claim — Exp 2 |
+| Dirichlet concentration shift | ✅ | Exp 3 (original) |
+| Amplitude/scale fault (CWRU bearing) | ❌ | Location shift dominates |
+| Rate-changing AFib (afdb) | ❌ | Location shift dominates |
+| Rate-matched AFib (windowed) | ❌ | Truncation artifact |
+| 1D exponential families | ❌ | R=0 by construction |
+| Large n + misspecified model | ❌ | Model-free methods dominate |

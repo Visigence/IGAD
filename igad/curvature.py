@@ -125,30 +125,25 @@ def scalar_curvature(
     theta: np.ndarray,
     g: Optional[np.ndarray] = None,
     T: Optional[np.ndarray] = None,
+    family=None,
 ) -> float:
-    """
-    Compute scalar curvature R(theta) of the Fisher-Rao manifold.
-
-        R = 1/4 * ( ||S||^2_g - ||T||^2_g )
-
-    where S_m = g^{ab} T_{abm}.
-    """
     theta = np.asarray(theta, dtype=np.float64)
 
+    # השתמש בשיטות אנליטיות אם קיימות — מדויק יותר ומהיר יותר
     if g is None:
-        g = fisher_metric(log_partition, theta)
+        if family is not None and hasattr(family, 'fisher_metric_analytical'):
+            g = family.fisher_metric_analytical(theta)
+        else:
+            g = fisher_metric(log_partition, theta)
+
     if T is None:
-        T = third_cumulant_tensor(log_partition, theta)
+        if family is not None and hasattr(family, 'third_cumulant_analytical'):
+            T = family.third_cumulant_analytical(theta)
+        else:
+            T = third_cumulant_tensor(log_partition, theta)
 
     g_inv = np.linalg.inv(g)
-
-    # Trace vector: S_m = g^{ab} T_{abm}
     S = np.einsum("ab,abm->m", g_inv, T)
-
-    # ||S||^2_g = g^{mn} S_m S_n
     S_norm_sq = np.einsum("mn,m,n->", g_inv, S, S)
-
-    # ||T||^2_g = g^{ia} g^{jb} g^{kc} T_{ijk} T_{abc}
     T_norm_sq = np.einsum("ia,jb,kc,ijk,abc->", g_inv, g_inv, g_inv, T, T)
-
     return 0.25 * (S_norm_sq - T_norm_sq)

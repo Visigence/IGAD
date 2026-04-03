@@ -29,10 +29,6 @@ class GammaFamily:
         return np.array([alpha - 1.0, -beta])
 
     @staticmethod
-    def from_natural(theta: np.ndarray):
-        return theta[0] + 1.0, -theta[1]
-
-    @staticmethod
     def fisher_metric_analytical(theta: np.ndarray) -> np.ndarray:
         alpha = theta[0] + 1.0
         lam = -theta[1]
@@ -47,34 +43,10 @@ class GammaFamily:
         alpha = theta[0] + 1.0
         lam = -theta[1]
         T = np.zeros((2, 2, 2))
-
-        # T_{000} = psi''(alpha)
         T[0, 0, 0] = polygamma(2, alpha)
-        # T_{001} = T_{010} = T_{100} = d/d(theta_2) g_{00}
-        #   g_{00} = psi'(alpha), no dependence on theta_2 => 0
-        # (already zero)
-
-        # T_{011} = T_{101} = T_{110} = d/d(theta_1) g_{01}
-        #   g_{01} = 1/lam = -1/theta_2, so d/d(theta_1) = 0
-        #   BUT g_{01} = 1/lam, and d/d(theta_2)(g_{00}) = 0
-        #   Actually T_{ijk} = d^3 A / d theta_i d theta_j d theta_k
-        #   T_{011} = d^3 A / d theta_0 d theta_1 d theta_1
-        #   A = gammaln(t1+1) - (t1+1)*log(-t2)
-        #   dA/dt2 = -(t1+1)/t2 = (t1+1)/lam
-        #   d^2A/dt1 dt2 = 1/(-t2) = 1/lam
-        #   d^3A/dt1 dt2 dt2 = 0  (no t2 dependence in 1/lam... wait)
-        #   d/dt2 (1/lam) = d/dt2 (-1/t2) = 1/t2^2 = 1/lam^2
-        #   So T_{011} = +1/lam^2
         T[0, 1, 1] = T[1, 0, 1] = T[1, 1, 0] = 1.0 / (lam**2)
-
-        # T_{111} = d^3 A / d theta_2^3
-        #   dA/dt2 = (t1+1)/(-t2) = alpha/lam
-        #   d^2A/dt2^2 = alpha/t2^2 = alpha/lam^2
-        #   d^3A/dt2^3 = -2*alpha/t2^3 = -2*alpha/(-lam)^3 = 2*alpha/lam^3
         T[1, 1, 1] = 2.0 * alpha / (lam**3)
-
         return T
-
     @staticmethod
     def mle(data: np.ndarray) -> np.ndarray:
         """MLE for Gamma from positive data via Newton iteration."""
@@ -247,3 +219,116 @@ class PoissonFamily:
     @staticmethod
     def mle(data: np.ndarray) -> np.ndarray:
         return PoissonFamily.to_natural(np.mean(data))
+
+
+
+class InverseGaussianFamily:
+    """
+    Inverse Gaussian (Wald) distribution in natural parameters.
+
+    f(x; mu, lam) = sqrt(lam/(2*pi*x^3)) * exp(-lam*(x-mu)^2/(2*mu^2*x))
+
+    Natural parameters:
+        theta_1 = -lam / (2*mu^2)    < 0
+        theta_2 = -lam / 2           < 0
+
+    Sufficient statistics: T(x) = (x, 1/x)
+
+    Log-partition function:
+        A(theta) = -1/2 * log(-2*theta_2) - 2 * sqrt(theta_1 * theta_2)
+
+    Derivation:
+        Follows from the Laplace transform identity:
+        integral_0^inf x^{-3/2} exp(-a*x - b/x) dx = sqrt(pi/b)*exp(-2*sqrt(a*b))
+        for a,b > 0. Setting a=-theta_1, b=-theta_2 and absorbing (2*pi)^{-1/2}
+        yields the expression above.
+
+    MLE (closed form):
+        mu_hat  = mean(x)
+        lam_hat = 1 / mean(1/x_i - 1/mu_hat)
+
+    References:
+        Tweedie, M.C.K. (1957). Statistical properties of inverse Gaussian distributions.
+        Folks & Chhikara (1978). The inverse Gaussian distribution and its applications.
+        Chhikara & Folks (1989). The Inverse Gaussian Distribution. Marcel Dekker.
+    """
+
+    name = "InverseGaussian"
+
+    @staticmethod
+    def log_partition(theta: np.ndarray) -> float:
+        t1, t2 = float(theta[0]), float(theta[1])
+        if t1 >= 0 or t2 >= 0:
+            return np.inf
+        return -0.5 * np.log(-2.0 * t2) - 2.0 * np.sqrt(t1 * t2)
+
+    @staticmethod
+    def to_natural(mu: float, lam: float) -> np.ndarray:
+        return np.array([-lam / (2.0 * mu ** 2), -lam / 2.0])
+
+    @staticmethod
+    def from_natural(theta: np.ndarray):
+        t1, t2 = theta[0], theta[1]
+        lam = -2.0 * t2
+        mu  = np.sqrt(t2 / t1)
+        return mu, lam
+
+    @staticmethod
+    def mle(data: np.ndarray) -> np.ndarray:
+        from igad.exceptions import ConvergenceError
+
+        x = np.asarray(data, dtype=np.float64).ravel()
+        x = x[x > 0]
+        if len(x) < 2:
+            raise ConvergenceError("InverseGaussianFamily MLE: fewer than 2 "
+                                   "positive observations.")
+
+        mu_hat  = float(np.mean(x))
+        inv_lam = float(np.mean(1.0 / x - 1.0 / mu_hat))
+        if inv_lam <= 0:
+            raise ConvergenceError(
+                f"InverseGaussianFamily MLE: 1/lambda_hat = {inv_lam:.4e} <= 0. "
+                f"Data may not follow an Inverse Gaussian distribution."
+            )
+
+        lam_hat = 1.0 / inv_lam
+
+        # Convergence gate: verify E[1/X] = 1/mu + 1/lam (Folks & Chhikara 1978)
+        expected_inv = 1.0 / mu_hat + 1.0 / lam_hat
+        observed_inv = float(np.mean(1.0 / x))
+        residual     = abs(expected_inv - observed_inv)
+
+        if residual > 1e-4 * observed_inv:
+            raise ConvergenceError(
+                f"InverseGaussianFamily MLE convergence gate: "
+                f"E[1/X] residual = {residual:.2e} "
+                f"(expected={expected_inv:.6f}, observed={observed_inv:.6f}). "
+                f"Fitted: mu={mu_hat:.4f}, lam={lam_hat:.4f}."
+            )
+
+        return InverseGaussianFamily.to_natural(mu_hat, lam_hat)
+
+    # ------------------------------------------------------------------ #
+    # Analytical Fisher metric and third cumulant for InverseGaussianFamily
+    # Added as patch — belongs inside InverseGaussianFamily
+    # ------------------------------------------------------------------ #
+    @staticmethod
+    def fisher_metric_analytical(theta: np.ndarray) -> np.ndarray:
+        a = -float(theta[0])
+        b = -float(theta[1])
+        g11 = np.sqrt(b) / (2.0 * a ** 1.5)
+        g12 = -1.0 / (2.0 * np.sqrt(a * b))
+        g22 = 1.0 / (2.0 * b ** 2) + np.sqrt(a) / (2.0 * b ** 1.5)
+        return np.array([[g11, g12],
+                         [g12, g22]])
+
+    @staticmethod
+    def third_cumulant_analytical(theta: np.ndarray) -> np.ndarray:
+        a = -float(theta[0])
+        b = -float(theta[1])
+        T = np.zeros((2, 2, 2))
+        T[0, 0, 0] = 3.0 * np.sqrt(b) / (4.0 * a ** 2.5)
+        T[0, 0, 1] = T[0, 1, 0] = T[1, 0, 0] = -1.0 / (4.0 * np.sqrt(b) * a ** 1.5)
+        T[0, 1, 1] = T[1, 0, 1] = T[1, 1, 0] = -1.0 / (4.0 * np.sqrt(a) * b ** 1.5)
+        T[1, 1, 1] = 1.0 / b ** 3 + 3.0 * np.sqrt(a) / (4.0 * b ** 2.5)
+        return T

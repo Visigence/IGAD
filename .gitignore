@@ -39,3 +39,12 @@ Thumbs.db
 
 # Egg info (editable install artifact)
 *.egg-info/
+# Data files — download via scripts, do not commit
+experiments/mitbih/*.dat
+experiments/mitbih/*.hea
+experiments/mitbih/*.atr
+experiments/mitbih/*.qrs
+experiments/cwru_data/*.mat
+
+# Paper draft — do not expose before publication
+Igad_paper.pdf
