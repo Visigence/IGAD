@@ -70,15 +70,24 @@ class GammaFamily:
 
 
 def _inv_digamma(y: float) -> float:
-    """Numerical inverse of digamma via Newton's method (Minka 2000)."""
+    """Numerical inverse of digamma via Newton's method (Minka 2000).
+
+    Newton's method converges quadratically from the Minka initialisation,
+    typically reaching machine precision in 4-6 iterations.  The loop is
+    capped at 50 iterations for safety, but exits early once the step size
+    is below 1e-12.
+    """
     if y >= -2.22:
         x = np.exp(y) + 0.5
     else:
         x = -1.0 / (y + digamma(1.0))
     for _ in range(50):
-        x -= (digamma(x) - y) / polygamma(1, x)
+        delta = (digamma(x) - y) / polygamma(1, x)
+        x -= delta
         if x <= 0:
             x = 1e-8
+        if abs(delta) < 1e-12:
+            break
     return x
 
 
@@ -129,6 +138,30 @@ class DirichletFamily:
         g = -tri_alpha0 * np.ones((k, k))
         np.fill_diagonal(g, tri_alpha - tri_alpha0)
         return g
+
+    @staticmethod
+    def third_cumulant_analytical(theta: np.ndarray) -> np.ndarray:
+        """
+        Analytical third cumulant tensor for Dirichlet(alpha).
+
+        A(theta) = sum_i gammaln(alpha_i) - gammaln(alpha_0),
+        so d^3 A / d theta_i d theta_j d theta_k equals:
+          psi_2(alpha_i) - psi_2(alpha_0)   if i == j == k
+          -psi_2(alpha_0)                   otherwise
+
+        where psi_2 = polygamma(2, .) is the tetragamma function.
+        """
+        alpha = np.asarray(theta, dtype=np.float64) + 1.0
+        alpha0 = alpha.sum()
+        k = len(alpha)
+        psi2_alpha  = polygamma(2, alpha)    # shape (k,)
+        psi2_alpha0 = float(polygamma(2, alpha0))
+        # All entries start at -psi2_alpha0 (the off-diagonal value)
+        T = np.full((k, k, k), -psi2_alpha0)
+        # Diagonal correction: T[i,i,i] = psi2_alpha[i] - psi2_alpha0
+        for i in range(k):
+            T[i, i, i] = float(psi2_alpha[i]) - psi2_alpha0
+        return T
 
     @staticmethod
     def mle(data: np.ndarray, max_iter: int = 1000, tol: float = 1e-8) -> np.ndarray:
