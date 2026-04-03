@@ -30,42 +30,23 @@ class GammaFamily:
 
     @staticmethod
     def fisher_metric_analytical(theta: np.ndarray) -> np.ndarray:
-        """
-        Analytical Fisher metric for Inverse Gaussian.
-
-        With a = -theta_1 > 0, b = -theta_2 > 0:
-            g_11 = sqrt(b) / (2 * a^(3/2))
-            g_12 = -1 / (2 * sqrt(a*b))
-            g_22 = 1/(2*b^2) + sqrt(a)/(2*b^(3/2))
-        """
-        a = -float(theta[0])
-        b = -float(theta[1])
-        g11 = np.sqrt(b) / (2.0 * a ** 1.5)
-        g12 = -1.0 / (2.0 * np.sqrt(a * b))
-        g22 = 1.0 / (2.0 * b ** 2) + np.sqrt(a) / (2.0 * b ** 1.5)
-        return np.array([[g11, g12],
-                         [g12, g22]])
+        alpha = theta[0] + 1.0
+        lam = -theta[1]
+        g = np.array([
+            [polygamma(1, alpha), 1.0 / lam],
+            [1.0 / lam,          alpha / (lam**2)],
+        ])
+        return g
 
     @staticmethod
     def third_cumulant_analytical(theta: np.ndarray) -> np.ndarray:
-        """
-        Analytical third cumulant tensor for Inverse Gaussian.
-
-        With a = -theta_1 > 0, b = -theta_2 > 0:
-            T_111 =  3*sqrt(b) / (4*a^(5/2))
-            T_112 = -1 / (4*sqrt(b)*a^(3/2))    [all permutations]
-            T_122 = -1 / (4*sqrt(a)*b^(3/2))    [all permutations]
-            T_222 =  1/b^3 + 3*sqrt(a)/(4*b^(5/2))
-        """
-        a = -float(theta[0])
-        b = -float(theta[1])
+        alpha = theta[0] + 1.0
+        lam = -theta[1]
         T = np.zeros((2, 2, 2))
-        T[0, 0, 0] = 3.0 * np.sqrt(b) / (4.0 * a ** 2.5)
-        T[0, 0, 1] = T[0, 1, 0] = T[1, 0, 0] = -1.0 / (4.0 * np.sqrt(b) * a ** 1.5)
-        T[0, 1, 1] = T[1, 0, 1] = T[1, 1, 0] = -1.0 / (4.0 * np.sqrt(a) * b ** 1.5)
-        T[1, 1, 1] = 1.0 / b ** 3 + 3.0 * np.sqrt(a) / (4.0 * b ** 2.5)
+        T[0, 0, 0] = polygamma(2, alpha)
+        T[0, 1, 1] = T[1, 0, 1] = T[1, 1, 0] = 1.0 / (lam**2)
+        T[1, 1, 1] = 2.0 * alpha / (lam**3)
         return T
-
     @staticmethod
     def mle(data: np.ndarray) -> np.ndarray:
         """MLE for Gamma from positive data via Newton iteration."""
@@ -326,3 +307,28 @@ class InverseGaussianFamily:
             )
 
         return InverseGaussianFamily.to_natural(mu_hat, lam_hat)
+
+    # ------------------------------------------------------------------ #
+    # Analytical Fisher metric and third cumulant for InverseGaussianFamily
+    # Added as patch — belongs inside InverseGaussianFamily
+    # ------------------------------------------------------------------ #
+    @staticmethod
+    def fisher_metric_analytical(theta: np.ndarray) -> np.ndarray:
+        a = -float(theta[0])
+        b = -float(theta[1])
+        g11 = np.sqrt(b) / (2.0 * a ** 1.5)
+        g12 = -1.0 / (2.0 * np.sqrt(a * b))
+        g22 = 1.0 / (2.0 * b ** 2) + np.sqrt(a) / (2.0 * b ** 1.5)
+        return np.array([[g11, g12],
+                         [g12, g22]])
+
+    @staticmethod
+    def third_cumulant_analytical(theta: np.ndarray) -> np.ndarray:
+        a = -float(theta[0])
+        b = -float(theta[1])
+        T = np.zeros((2, 2, 2))
+        T[0, 0, 0] = 3.0 * np.sqrt(b) / (4.0 * a ** 2.5)
+        T[0, 0, 1] = T[0, 1, 0] = T[1, 0, 0] = -1.0 / (4.0 * np.sqrt(b) * a ** 1.5)
+        T[0, 1, 1] = T[1, 0, 1] = T[1, 1, 0] = -1.0 / (4.0 * np.sqrt(a) * b ** 1.5)
+        T[1, 1, 1] = 1.0 / b ** 3 + 3.0 * np.sqrt(a) / (4.0 * b ** 2.5)
+        return T
