@@ -234,14 +234,14 @@ for any method. IGAD contributed nothing unique in this setting.
 
 1. **IGAD > MLE-skewness by ≥ +0.04** (mean, 5 seeds, n=200, Gamma vs
    LogNormal, matched mean+variance).
-   Verified: `experiments/demo_hard.py`
+   Verified: `experiments/run_gamma_vs_lognormal.py`
 
 2. **IGAD > MMD at n=200** for Gamma vs LogNormal (matched mean+variance).
    Gap: +0.065.
-   Verified: `experiments/demo_hard_extended.py`
+   Verified: `experiments/run_gamma_vs_lognormal_extended.py`
 
 3. **IGAD > MMD at every n ∈ {50,100,200,300,500}** for Gamma vs LogNormal.
-   Verified: `experiments/demo_hard_extended.py`
+   Verified: `experiments/run_gamma_vs_lognormal_extended.py`
 
 4. **R(Gaussian) constant regardless of parameters** — proven empirically.
    Verified: `tests/test_dirichlet_family.py::TestFailureModes`

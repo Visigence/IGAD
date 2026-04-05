@@ -1,4 +1,4 @@
-# experiments/demo_gaussian2d.py
+# experiments/run_gaussian_failure_mode.py
 import numpy as np
 import math
 import matplotlib

@@ -96,15 +96,15 @@ prefer ensemble approaches combining IGAD (for small n) with MMD or Wasserstein
 ## The Falsifiable Claims
 
 1. **IGAD AUC > MLE-skewness control by at least +0.04** (mean, 5 seeds, n=200,
-   Gamma vs LogNormal with matched mean+variance). Verified in `experiments/demo_hard.py`
-   and `experiments/demo_hard_extended.py`.
+   Gamma vs LogNormal with matched mean+variance). Verified in `experiments/run_gamma_vs_lognormal.py`
+   and `experiments/run_gamma_vs_lognormal_extended.py`.
 
 2. **IGAD AUC > 0.65 at n=200** for Dirichlet k=3 concentration shift
    (Dirichlet(4,4,4) vs Dirichlet(1.5,4,6.5), seed=42, 100 normal + 50 anomaly batches).
    Verified in `tests/test_dirichlet_family.py::TestIGADDirichletDetection`.
 
 3. **IGAD AUC > MMD at n <= 100** for Dirichlet k=3 concentration shift
-   (sample efficiency regime). Verified empirically in `experiments/demo_dirichlet.py`
+   (sample efficiency regime). Verified empirically in `experiments/run_dirichlet_concentration.py`
    Part 3.
 
 4. **R(Gaussian) is constant regardless of correlation parameter** (proven, not empirical).
@@ -116,7 +116,7 @@ prefer ensemble approaches combining IGAD (for small n) with MMD or Wasserstein
 
 6. **IGAD AUC > MMD AUC AND IGAD AUC > Wasserstein AUC with p<0.001 (permutation
    test) and non-overlapping 95% CIs at n=50** for Dirichlet pure concentration-profile
-   shift (identical mean direction, halved α₀). Verified in `experiments/exp_dirichlet_decisive.py`
+   shift (identical mean direction, halved α₀). Verified in `experiments/run_decisive_dirichlet.py`
    across k=3, k=4, k=5 families. This is the strongest falsifiable claim: it holds even
    when the mean-shift confound from the original pair is removed.
 
@@ -158,7 +158,7 @@ For the canonical Dirichlet detection pair (with mean-shift confound):
 | Anomaly               | [1.5, 4.0, 6.5] | 1.4932    |
 
 `|R_ref - R_anom| ≈ 0.020` — verified in unit tests and Part 4 of
-`experiments/demo_dirichlet.py`. This non-zero separation is the mathematical
+`experiments/run_dirichlet_concentration.py`. This non-zero separation is the mathematical
 foundation that makes IGAD work for this family.
 
 For the decisive pure-shape-shift pairs (Exp 7, no mean-shift confound):

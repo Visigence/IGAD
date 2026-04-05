@@ -6,7 +6,7 @@ All results are reproducible via the scripts in `experiments/`.
 
 ## Experiment 1: Easy Case — Gamma vs Gamma
 
-**File**: `experiments/demo_easy.py`
+**File**: `experiments/run_gamma_vs_gamma.py`
 **Setup**: Gamma(9,3) vs Gamma(1.5,0.5), batch_size=200
 - Normal:  mean=3.00, var=1.00, skew=0.667
 - Anomaly: mean=3.00, var=6.00, skew=1.633
@@ -26,7 +26,7 @@ Batch mean shift                   0.8150
 
 ## Experiment 2: Hard Case — Matched Mean AND Variance
 
-**File**: `experiments/demo_hard.py`
+**File**: `experiments/run_gamma_vs_lognormal.py`
 **Setup**: Gamma(8,2) vs LogNormal(mu=1.327, sigma=0.343)
 - Normal:  mean=4.000, var=2.000, skew=0.707
 - Anomaly: mean=4.000, var=2.000, skew=1.105
@@ -85,7 +85,7 @@ model misspecification (fitting Gamma to LogNormal) degrades the signal.
 
 ## Experiment 3: Within-Family — Gamma(8,2) vs Gamma(6,1.5)
 
-**File**: `experiments/demo_hard1.py`
+**File**: `experiments/run_within_family_gamma.py`
 **Setup**: Same mean=4.0, different variance (2.00 vs 2.67) and skewness (0.707 vs 0.816)
 ```
 n=  50   IGAD=0.4206   Skew=0.4376   Mean=0.6206   Var=0.7130
@@ -120,7 +120,7 @@ information through the curvature tensor.
 | **Dirichlet pure-shape k=3, n=50, vs Wass (p<0.001)** | **0.9999** | **Wass: 0.928** | **Yes — p<0.001** |
 | **Dirichlet pure-shape k=5, n=50, vs MMD (p=0.002)** | **1.0000** | **MMD: 0.889** | **Yes — p=0.002** |
 
-## Honest Limitations
+## Limitations
 
 1. **Model specification required**: IGAD needs a correct exponential family
 2. **1D families are flat**: R=0 for Poisson, Exponential, Bernoulli
@@ -128,7 +128,7 @@ information through the curvature tensor.
 4. **Large n + misspecified model**: Model-free methods dominate at n>500
 5. **Computational cost**: O(d^3) tensor contractions per evaluation
 
-## The Falsifiable Claim
+## When IGAD Adds Value
 
 IGAD's advantage over the MLE-skewness control (same MLE fit, no curvature tensor)
 confirms that the scalar curvature — through full contraction of the third cumulant
@@ -144,7 +144,7 @@ is over distance-based and MLE-moment baselines, not over all possible estimator
 
 ## Experiment 6: Decisive Test — Small-n Heavy-Tail Regime
 
-**File**: `experiments/exp_decisive.py`
+**File**: `experiments/run_decisive_gamma_weibull.py`
 
 ### Setup
 
@@ -235,7 +235,7 @@ distributional shape information beyond what MLE-derived moments can detect.
 
 ## Experiment 7: Decisive Dirichlet Test — Pure Concentration-Profile Shift
 
-**File**: `experiments/exp_dirichlet_decisive.py`
+**File**: `experiments/run_decisive_dirichlet.py`
 
 ### Design: Eliminating the Mean-Shift Confound
 

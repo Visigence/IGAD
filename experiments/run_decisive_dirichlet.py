@@ -1,5 +1,5 @@
 """
-experiments/exp_dirichlet_decisive.py
+experiments/run_decisive_dirichlet.py
 
 Decisive Dirichlet Experiment — Pure Concentration-Profile Shift
 ================================================================

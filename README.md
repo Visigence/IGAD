@@ -101,18 +101,18 @@ test_curvature.py             12 tests (Gamma/Poisson)
 test_dirichlet_family.py      34 tests (Dirichlet, 6 classes)
 test_igad_detector.py          5 tests (score API, predict, edge cases)
 experiments/
-demo_easy.py                  Experiment 1: Gamma vs Gamma
-demo_hard.py                  Experiment 2: Gamma vs LogNormal + MLE control
-demo_hard_extended.py         Experiment 2b: + MMD + Wasserstein baselines
-demo_hard1.py                 Experiment 3: Within-family Gamma shift
-demo_dirichlet.py             Experiment 3a: Dirichlet concentration shifts
-demo_gaussian2d.py            Gaussian failure mode
+run_gamma_vs_gamma.py                  Experiment 1: Gamma vs Gamma
+run_gamma_vs_lognormal.py                  Experiment 2: Gamma vs LogNormal + MLE control
+run_gamma_vs_lognormal_extended.py         Experiment 2b: + MMD + Wasserstein baselines
+run_within_family_gamma.py                 Experiment 3: Within-family Gamma shift
+run_dirichlet_concentration.py             Experiment 3a: Dirichlet concentration shifts
+run_gaussian_failure_mode.py            Gaussian failure mode
 cwru_data/igad_eval.py        Experiment 4: CWRU bearing fault (real-world)
 mitbih/igad_ecg_v6.py         Experiment 5: ECG AFib detection (real-world)
-exp_decisive.py               Experiment 6: Decisive test — Gamma vs Weibull (matched mean+var)
+run_decisive_gamma_weibull.py               Experiment 6: Decisive test — Gamma vs Weibull (matched mean+var)
 docs/
 proof.md                      Mathematical background and attribution
-operational_envelope.md       Falsifiable claims: when IGAD wins and loses
+operational_envelope.md       When IGAD wins and loses
 sample_complexity_proof.md    Formal sample complexity proof (delta method, §3–§5)
 figures/                      Experiment plots
 RESULTS.md                      Full experimental results and analysis
@@ -208,7 +208,7 @@ IGAD's advantage is over distance-based baselines, not moment estimators.
 > IGAD beats both raw skewness and MLE-skewness with statistical significance
 > at n=100–200. This directly validates the core claim.
 
-**File**: `experiments/exp_decisive.py`
+**File**: `experiments/run_decisive_gamma_weibull.py`
 
 **Setup**
 
@@ -369,15 +369,8 @@ TestIGADDetector             (5)  — score API, predict, zero-score self, posit
 ---
 
 ## Citation
-```bibtex
-@article{damari2026igad,
-  title  = {IGAD: Information-Geometric Anomaly Detection via Scalar
-            Curvature of Fisher-Rao Manifolds},
-  author = {Damari, Omry},
-  year   = {2026},
-  url    = {https://github.com/Visigence/IGAD}
-}
-```
+
+If you use IGAD in your work, please cite it using the metadata in [`CITATION.cff`](CITATION.cff).
 
 ---
 
