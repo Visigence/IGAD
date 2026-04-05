@@ -1,7 +1,7 @@
 """
-experiments/demo_hard_extended.py
+experiments/run_gamma_vs_lognormal_extended.py
 
-Re-run the Gamma(8,2) vs LogNormal experiment from demo_hard.py with two
+Re-run the Gamma(8,2) vs LogNormal experiment from run_gamma_vs_lognormal.py with two
 additional baselines: MMD (RBF kernel, median heuristic) and Wasserstein (1D).
 """
 

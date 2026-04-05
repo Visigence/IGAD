@@ -1,5 +1,5 @@
 """
-experiments/demo_dirichlet.py
+experiments/run_dirichlet_concentration.py
 
 Four-part Dirichlet experiment:
   Part 1 — Curvature landscape: R(α) as α concentration varies along a path
