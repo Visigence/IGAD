@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "IGAD: Information-Geometric Anomaly Detection via Scalar Curvature of Fisher-Rao Manifolds"
+authors:
+  - family-names: Damari
+    given-names: Omry
+version: 1.0.0
+date-released: 2026-01-01
+url: "https://github.com/Visigence/IGAD"

@@ -46,7 +46,7 @@ experiments/mitbih/*.atr
 experiments/mitbih/*.qrs
 experiments/cwru_data/*.mat
 
-# Paper draft — do not expose before publication
+# PDF build artifact
 Igad_paper.pdf
 
 # LaTeX build artifacts

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="igad",
-    version="0.1.0",
+    version="1.0.0",
     description="Information-Geometric Anomaly Detection via Fisher-Rao Scalar Curvature",
     author="Omry Damari",
     packages=find_packages(),

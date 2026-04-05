@@ -331,7 +331,7 @@ WHY IGAD (SCALAR CURVATURE) SUCCEEDS:
 
 
 def _make_figure(rows, batch_sizes):
-    """Produce a 3-panel publication-quality figure."""
+    """Produce a 3-panel summary figure."""
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
     fig.suptitle(
         "Experiment 6 — Decisive Test: Gamma(α=2,β=1) vs Weibull (matched mean+var)\n"
