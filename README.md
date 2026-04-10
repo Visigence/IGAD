@@ -7,7 +7,7 @@
 [![Tests](https://img.shields.io/badge/tests-51%20passed-brightgreen)](tests/)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Demo](https://img.shields.io/badge/demo-live-orange)](https://igad.vercel.app)
+[![Demo](https://img.shields.io/badge/demo-live-orange)](https://ig-tau-three.vercel.app)
 
 [**Interactive Demo →**](https://igad.vercel.app) · [**Mathematical Proof**](docs/proof.md) · [**Full Results**](RESULTS.md) · [**Operational Envelope**](docs/operational_envelope.md)
 
