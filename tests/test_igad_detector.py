@@ -49,6 +49,23 @@ class TestIGADDetector(unittest.TestCase):
         score = self.detector.score_batch(X_anom)
         self.assertGreater(score, 0.0)
 
+    def test_predict_threshold_zero_always_anomalous(self):
+        """With threshold=0 and any non-zero score, predict should return 1."""
+        rng = np.random.default_rng(5)
+        X_anom = rng.lognormal(mean=1.327, sigma=0.343, size=300)
+        result = self.detector.predict(X_anom, threshold=0.0)
+        self.assertEqual(result, 1)
+
+    def test_predict_threshold_boundary(self):
+        """Score exactly at threshold should return 1 (>= semantics)."""
+        rng = np.random.default_rng(5)
+        X_anom = rng.lognormal(mean=1.327, sigma=0.343, size=300)
+        score = self.detector.score_batch(X_anom)
+        # At exactly the score value, predict should return 1
+        self.assertEqual(self.detector.predict(X_anom, threshold=score), 1)
+        # Just above the score, predict should return 0
+        self.assertEqual(self.detector.predict(X_anom, threshold=score + 1e-10), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

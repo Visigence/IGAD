@@ -47,6 +47,7 @@ class GammaFamily:
         T[0, 1, 1] = T[1, 0, 1] = T[1, 1, 0] = 1.0 / (lam**2)
         T[1, 1, 1] = 2.0 * alpha / (lam**3)
         return T
+
     @staticmethod
     def mle(data: np.ndarray) -> np.ndarray:
         """MLE for Gamma from positive data via Newton iteration."""
@@ -341,10 +342,6 @@ class InverseGaussianFamily:
 
         return InverseGaussianFamily.to_natural(mu_hat, lam_hat)
 
-    # ------------------------------------------------------------------ #
-    # Analytical Fisher metric and third cumulant for InverseGaussianFamily
-    # Added as patch — belongs inside InverseGaussianFamily
-    # ------------------------------------------------------------------ #
     @staticmethod
     def fisher_metric_analytical(theta: np.ndarray) -> np.ndarray:
         a = -float(theta[0])

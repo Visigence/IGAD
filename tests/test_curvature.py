@@ -63,5 +63,15 @@ class TestGammaFamily:
         R_func = scalar_curvature(GammaFamily.log_partition, theta, g=g, T=T)
         assert abs(R_manual - R_func) < 1e-10, "Inconsistent: %s vs %s" % (R_manual, R_func)
 
+    def test_mle_recovers_parameters(self):
+        """Fit n=2000 samples from Gamma(5, 3), recover alpha and beta within rtol=0.05."""
+        rng = np.random.default_rng(42)
+        data = rng.gamma(shape=5.0, scale=1/3.0, size=2000)
+        theta = GammaFamily.mle(data)
+        alpha_hat = theta[0] + 1.0
+        beta_hat = -theta[1]
+        np.testing.assert_allclose(alpha_hat, 5.0, rtol=0.05)
+        np.testing.assert_allclose(beta_hat, 3.0, rtol=0.05)
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

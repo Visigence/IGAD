@@ -55,7 +55,6 @@ def third_cumulant_tensor(
     log_partition: Callable[[np.ndarray], float],
     theta: np.ndarray,
     eps: float = 1e-3,
-    **kwargs,
 ) -> np.ndarray:
     """
     Compute T_{ijk} = d^3 A / d theta_i d theta_j d theta_k directly
@@ -129,7 +128,7 @@ def scalar_curvature(
 ) -> float:
     theta = np.asarray(theta, dtype=np.float64)
 
-    # השתמש בשיטות אנליטיות אם קיימות — מדויק יותר ומהיר יותר
+    # Use analytical methods if available — more accurate and faster
     if g is None:
         if family is not None and hasattr(family, 'fisher_metric_analytical'):
             g = family.fisher_metric_analytical(theta)
