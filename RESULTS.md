@@ -347,7 +347,7 @@ Not the operational regime for IGAD. Documented in operational_envelope.
 
 ## Experiment 5: Real-World Validation — ECG AFib Detection
 
-**File**: `experiments/mitbih/igad_ecg_v6.py`
+**File**: `experiments/mitbih/igad_ecg.py`
 **Dataset**: MIT-BIH Atrial Fibrillation Database (PhysioNet afdb)
 **Records**: 04015, 04043 | NSR=92,785 intervals, AFIB=14,940 intervals
 **Finding**: AFib in afdb includes 20% rate increase (mean ratio 0.804x).

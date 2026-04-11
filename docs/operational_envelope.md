@@ -78,6 +78,21 @@ R = 0 for all parameter values, and the IGAD score |R_ref - R_local| = 0 always.
 rate, Bernoulli probability, or any single-parameter family. This is proven, not
 empirical.
 
+### Failure Mode 2b: Inverse Gaussian family
+
+**R ≈ 1.0 (constant) for all Inverse Gaussian parameters.**
+
+Mathematical reason: The Inverse Gaussian Fisher-Rao manifold is a constant-curvature
+2D Riemannian manifold (R ≈ 1.0 for all (μ, λ) parameter values). This is analogous
+to the Gaussian failure mode. Empirically verified:
+R(μ=1,λ=1) = R(μ=2,λ=5) = R(μ=0.5,λ=10) = R(μ=3,λ=0.5) ≈ 1.0 to within
+machine precision (|ΔR| < 1e-6, see `tests/test_inverse_gaussian_family.py`).
+
+**Consequence:** IGAD cannot detect any IG-to-IG parameter shift. The
+InverseGaussianFamily is included for cross-family detection (e.g., fitting IG
+to non-IG data) and for numerical stability in ECG applications, not for
+within-family anomaly detection.
+
 ### Failure Mode 3: Large n with misspecified model
 
 When n is large (> 500 per batch), non-parametric methods (MMD, Wasserstein)
@@ -154,10 +169,10 @@ For the canonical Dirichlet detection pair (with mean-shift confound):
 
 | Distribution          | α               | R(α)      |
 |-----------------------|-----------------|-----------|
-| Reference             | [4.0, 4.0, 4.0] | 1.5132    |
-| Anomaly               | [1.5, 4.0, 6.5] | 1.4932    |
+| Reference             | [4.0, 4.0, 4.0] | 1.5109    |
+| Anomaly               | [1.5, 4.0, 6.5] | 1.4962    |
 
-`|R_ref - R_anom| ≈ 0.020` — verified in unit tests and Part 4 of
+`|R_ref - R_anom| ≈ 0.015` — verified in unit tests and Part 4 of
 `experiments/run_dirichlet_concentration.py`. This non-zero separation is the mathematical
 foundation that makes IGAD work for this family.
 
@@ -169,6 +184,9 @@ For the decisive pure-shape-shift pairs (Exp 7, no mean-shift confound):
 | k=3 asym | [6,3,3] | [3,1.5,1.5] | 1.5088 | 1.4708 | 0.038 |
 | k=4 sym  | [3,3,3,3] | [1.5,…] | 2.0348 | 1.9885 | 0.046 |
 | k=5 sym  | [2.4,…] | [1.2,…] | 2.5602 | 2.4696 | 0.091 |
+
+Note: All values computed via the analytical path (`scalar_curvature(..., family=DirichletFamily)`).
+Earlier numerical finite-difference values may differ slightly.
 
 Curvature separation grows with dimension k (0.027→0.046→0.091 for k=3,4,5),
 explaining why IGAD's advantage strengthens in higher-dimensional Dirichlet families.

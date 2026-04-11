@@ -175,16 +175,19 @@ IGAD beats MMD and Wasserstein at every n tested.
 
 ---
 
-### 6.3 Experiment 3 — Dirichlet Concentration Shifts
+### 6.3 Dirichlet Concentration Shifts (RESULTS.md Experiment 7)
 
 **Setup**: Dirichlet(4,4,4) vs Dirichlet(1.5,4,6.5)
 Both sum to α₀=12.0.
 
-**Curvature verification**:
+**Curvature verification** (analytical, via `scalar_curvature(..., family=DirichletFamily)`):
 
-    R(α_ref=[4,4,4])       = 1.513247
-    R(α_anom=[1.5,4,6.5])  = 1.493184
-    |ΔR|                   = 0.020063
+    R(α_ref=[4,4,4])       = 1.510926
+    R(α_anom=[1.5,4,6.5])  = 1.496177
+    |ΔR|                   = 0.014749
+
+Note: Earlier revisions reported numerical finite-difference values (1.5132, 1.4932);
+the analytical path is exact.
 
 Scalar curvature varies non-trivially along concentration paths, confirming
 the Dirichlet manifold is geometrically meaningful for IGAD.
@@ -227,6 +230,7 @@ for any method. IGAD contributed nothing unique in this setting.
 | Exponential     | 1   | No (R≡0)    | No — proven      |
 | Gamma           | 2   | Yes         | Yes — confirmed  |
 | Gaussian        | 3   | No (const)  | No — proven      |
+| Inv-Gaussian    | 2   | No (const)  | No — verified    |
 | Dirichlet (k≥3) | k−1 | Yes         | Promising        |
 | Neg-Binomial    | 2   | Yes         | Untested         |
 
