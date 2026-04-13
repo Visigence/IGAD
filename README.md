@@ -3,7 +3,7 @@
 **Author:** Omry Damari · 2026
 **Repository:** https://github.com/Visigence/IGAD
 
-🌐 **[Interactive Demo & Paper →](https://igad-web.vercel.app)**
+🌐 **[Interactive Demo & Paper →](https://ig-tau-three.vercel.app)**
 
 Classical anomaly detectors are blind to shape shifts - anomalies that
 preserve mean and variance but change distributional geometry. IGAD detects them.
