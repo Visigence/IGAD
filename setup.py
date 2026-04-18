@@ -12,4 +12,9 @@ setup(
         "scipy>=1.10",
         "scikit-learn>=1.2",
     ],
+    extras_require={
+        "experiments": [
+            "matplotlib>=3.7",
+        ],
+    },
 )
