@@ -1,15 +1,21 @@
-# IGAD: Information-Geometric Anomaly Detection
+# Curvision
+## Information-Geometric Anomaly Detection
+### Formerly IGAD
 
-**Author:** Omry Damari · 2026
-**Repository:** https://github.com/Visigence/IGAD
+**Author:** Omry Damari · 2026  
+**Repository:** https://github.com/Visigence/Curvision
 
-🌐 **[Interactive Demo & Paper →](https://ig-tau-three.vercel.app)**
+Curvision is an information-geometric anomaly detector for batch-level
+distribution shifts that appear in shape rather than location or scale.
+It is designed for settings in which mean and variance may remain unchanged
+while the underlying geometry of the distribution changes.
 
-Classical anomaly detectors are blind to shape shifts - anomalies that
-preserve mean and variance but change distributional geometry. IGAD detects them.
+The method compares scalar curvature on the Fisher–Rao statistical manifold
+between a reference fit and a local batch fit, turning geometric deviation
+into an anomaly score. In this regime, Curvision targets a complementary
+signal to standard location-, scale-, and density-based detection methods.
 
-
-> *"The anomaly isn't where the distribution is. It's what shape it is."*
+> *"The signal isn’t always farther away. Sometimes it’s hidden in the curve."*
 
 ---
 
@@ -37,23 +43,12 @@ distribution has completely changed. No distance-based algorithm detects this.
 
 ---
 
-## Interactive Web Demo
-
-**[→ igad-web.vercel.app](https://igad-web.vercel.app)**
-
-The web demo includes:
-- **Live curvature explorer** — drag the Gamma shape parameter α and watch scalar curvature R(θ) change in real time
-- **Real PDF visualization** — exact Gamma(8,2) vs moment-matched LogNormal computed from mathematical definitions
-- **Full results & charts** — sample-efficiency sweep, comparison tables, annotated plots
-- **Paper access** — [read the full paper (PDF)](https://github.com/Visigence/IGAD/blob/main/Igad_paper.pdf)
-
----
 
 ## The Invention
 
-The novel contribution of this work is a single construction:
+The contribution of this work is a single construction:
 ```
-IGAD(batch) = |R(theta_ref) - R(theta_local)|
+Curvision(batch) = |R(theta_ref) - R(theta_local)|
 ```
 
 where `R(theta)` is the scalar curvature of the Fisher-Rao statistical manifold
@@ -91,7 +86,7 @@ parameter geometry. No scalar moment captures this.
 The **proof**: a control experiment with identical MLE fit but no curvature
 tensor confirms the geometry adds +0.053 AUC independently of MLE efficiency.
 
-The **result**: IGAD beats MMD and Wasserstein when mean and variance are
+The **result**: Curvision beats MMD and Wasserstein when mean and variance are
 held exactly identical — the regime where every distance-based method is blind.
 
 ---
@@ -114,10 +109,10 @@ Full derivation with attribution: `docs/proof.md`
 
 ## Implementation
 ```
-igad/
+curvision/
   curvature.py          Fisher metric, third cumulant tensor, scalar curvature
   families.py           GammaFamily, PoissonFamily, DirichletFamily
-  detector.py           IGADDetector.score_batch() — batch-level IGAD score
+  detector.py           CurvisionDetector.score_batch() — batch-level Curvision score
   exceptions.py         ConvergenceError (MLE convergence gate)
 tests/
   test_curvature.py         12 validation tests (Gamma/Poisson)
@@ -131,7 +126,7 @@ experiments/
   demo_gaussian2d.py        Experiment 5: Gaussian failure mode (documented)
 docs/
   proof.md                  Mathematical background with full attribution
-  operational_envelope.md   Falsifiable claims: when IGAD wins and loses
+  operational_envelope.md   Falsifiable claims: when Curvision wins and loses
   figures/                  Experiment plots
 RESULTS.md                  Full experimental results and analysis
 ```
@@ -143,14 +138,14 @@ RESULTS.md                  Full experimental results and analysis
 pip install -e .
 
 import numpy as np
-from igad import IGADDetector
-from igad.families import GammaFamily
+from Curvision import CurvisionDetector
+from Curvision.families import GammaFamily
 
-detector = IGADDetector(family=GammaFamily)
+detector = CurvisionDetector(family=GammaFamily)
 detector.fit(np.random.gamma(8.0, 0.5, size=200))
 
 score = detector.score_batch(np.random.lognormal(1.327, 0.343, size=200))
-print(f"IGAD score: {score:.6f}")  # Higher = more anomalous
+print(f"Curvision score: {score:.6f}")  # Higher = more anomalous
 ```
 
 ---
@@ -169,14 +164,14 @@ python -m pytest tests/ -v
 
 Gamma(9,3) vs Gamma(1.5,0.5) · same mean (3.0), different variance and skewness
 
-| Method           | AUC-ROC |
-|------------------|---------|
-| IGAD (curvature) | 1.0000  |
-| Variance shift   | 1.0000  |
-| Skewness shift   | 0.9834  |
-| Mean shift       | 0.8150  |
+| Method                | AUC-ROC |
+|-----------------------|---------|
+| Curvision (curvature) | 1.0000  |
+| Variance shift        | 1.0000  |
+| Skewness shift        | 0.9834  |
+| Mean shift            | 0.8150  |
 
-IGAD achieves perfect separation. Variance baseline also reaches 1.0 because
+Curvision achieves perfect separation. Variance baseline also reaches 1.0 because
 variance differs by 6×. This experiment does not prove unique value.
 
 ---
@@ -185,37 +180,36 @@ variance differs by 6×. This experiment does not prove unique value.
 
 Gamma(8,2) vs LogNormal · mean=4.0, var=2.0 **identical** for both
 
-**[→ See interactive visualization](https://igad-web.vercel.app#results)**
 
 **Results — 5 seeds, batch_size=200**
 
-| Method                  | Mean AUC | ± Std |
-|-------------------------|----------|-------|
-| IGAD (curvature)        | 0.6542   | 0.047 |
-| MLE skewness [CONTROL]  | 0.6016   | 0.038 |
-| Raw skewness            | 0.6794   | 0.072 |
-| MMD (RBF, median-BW)    | 0.5894   | 0.076 |
-| Wasserstein (1D)        | 0.5925   | 0.057 |
-| Mean shift [BLIND]      | 0.5240   | 0.062 |
-| Variance shift [BLIND]  | 0.5818   | 0.027 |
+| Method                 | Mean AUC | ± Std |
+|------------------------|----------|-------|
+| Curvision (curvature)  | 0.6542   | 0.047 |
+| MLE skewness [control] | 0.6016   | 0.038 |
+| Raw skewness           | 0.6794   | 0.072 |
+| MMD (RBF, median-BW)   | 0.5894   | 0.076 |
+| Wasserstein (1D)       | 0.5925   | 0.057 |
+| Mean shift [blind]     | 0.5240   | 0.062 |
+| Variance shift [blind] | 0.5818   | 0.027 |
 
-**Gap (IGAD − MLE skewness): +0.053**
+**Gap (Curvision − MLE skewness): +0.053**
 Curvature geometry adds signal **beyond** MLE efficiency alone.
 
-**Sample-efficiency sweep — IGAD vs MMD vs Wasserstein (fixed signal)**
+**Sample-efficiency sweep — Curvision vs MMD vs Wasserstein (fixed signal)**
 
-| n   | IGAD   | MMD    | Wasserstein | Gap(IGAD−MMD) |
-|-----|--------|--------|-------------|---------------|
-| 50  | 0.5522 | 0.5465 | 0.5425      | +0.006        |
-| 100 | 0.5871 | 0.5639 | 0.5440      | +0.023        |
-| 200 | 0.6542 | 0.5894 | 0.5925      | **+0.065**    |
-| 300 | 0.6395 | 0.6074 | 0.5933      | +0.032        |
-| 500 | 0.7150 | 0.6814 | 0.6777      | **+0.034**    |
+| n   |Curvision| MMD    | Wasserstein | Gap(Curvision−MMD) 
+|-----|---------|--------|-------------|------------------|
+| 50  | 0.5522  | 0.5465 | 0.5425      | +0.006           |
+| 100 | 0.5871  | 0.5639 | 0.5440      | +0.023           |
+| 200 | 0.6542  | 0.5894 | 0.5925      | **+0.065**       |
+| 300 | 0.6395  | 0.6074 | 0.5933      | +0.032           |
+| 500 | 0.7150  | 0.6814 | 0.6777      | **+0.034**       |
 
-IGAD beats both MMD and Wasserstein at every batch size tested (n ∈ {50, 100, 200, 300, 500}).
+Curvision beats both MMD and Wasserstein at every batch size tested (n ∈ {50, 100, 200, 300, 500}).
 Mean and variance are **exactly identical** between reference and anomaly in all runs.
-Note: raw skewness dominates at large n (n=500, seed=42: raw-skew AUC=0.919 vs IGAD=0.675);
-IGAD's advantage is over distance-based baselines, not moment estimators.
+Note: raw skewness dominates at large n (n=500, seed=42: raw-skew AUC=0.919 vs Curvision=0.675);
+Curvision's advantage is over distance-based baselines, not moment estimators.
 
 ---
 
@@ -223,18 +217,18 @@ IGAD's advantage is over distance-based baselines, not moment estimators.
 
 Setup: α_ref = [4, 4, 4] vs α_anom = [1.5, 4, 6.5] — both sum to 12.0
 
-| n   | IGAD   | MMD    | Wasserstein |
-|-----|--------|--------|-------------|
-| 20  | 0.7540 | 0.9998 | 1.0000      |
-| 50  | 0.9074 | 1.0000 | 1.0000      |
-| 100 | 0.9302 | 1.0000 | 1.0000      |
-| 200 | 0.9822 | 1.0000 | 1.0000      |
-| 500 | 0.9878 | 1.0000 | 1.0000      |
+| n   | Curvision   | MMD    | Wasserstein |
+|-----|-------------|--------|-------------|
+| 20  | 0.7540      | 0.9998 | 1.0000      |
+| 50  | 0.9074      | 1.0000 | 1.0000      |
+| 100 | 0.9302      | 1.0000 | 1.0000      |
+| 200 | 0.9822      | 1.0000 | 1.0000      |
+| 500 | 0.9878      | 1.0000 | 1.0000      |
 
 Note: The Dirichlet pair used here (α=[4,4,4] vs α=[1.5,4,6.5]) includes a marginal
 mean shift — the component means change when α is non-uniform. MMD and Wasserstein
 dominate because they directly detect this mean shift. This experiment validates
-that IGAD's curvature is non-zero and non-constant on the Dirichlet manifold;
+that Curvision's curvature is non-zero and non-constant on the Dirichlet manifold;
 it does not test the pure concentration-shift regime. The clean cross-family result
 (matched mean AND variance) is Experiment 2.
 
@@ -243,26 +237,26 @@ it does not test the pure concentration-shift regime. The clean cross-family res
 ### Experiment 4 — Gaussian Failure Mode (Honest Limitation)
 
 The Gaussian manifold has **constant** scalar curvature (isometric to hyperbolic
-space). IGAD adds nothing to Gaussian anomaly detection. Documented and tested.
+space). Curvision adds nothing to Gaussian anomaly detection. Documented and tested.
 
 ---
 
 ## Operational Envelope
 
-| Condition                              | IGAD Performance                      |
+  Condition                              | Curvision Performance                  
 |----------------------------------------|---------------------------------------|
-| Cross-family shape shift, n=200–500    | ✅ Beats MMD and Wasserstein           |
-| Gamma family, correct spec, n=200      | ✅ Beats MLE-skewness control (+0.053) |
-| Gaussian families                      | ❌ Constant curvature — do not use    |
-| 1D parameter families (Poisson, Exp)   | ❌ R≡0 — do not use                   |
-| Large n + misspecified model (n>500)   | ⚠️ Degrades — use MMD/Wasserstein     |
-| No parametric model available          | ⚠️ Use model-free tests instead       |
+| Cross-family shape shift, n=200–500    | Beats MMD and Wasserstein           |
+| Gamma family, correct spec, n=200      | Beats MLE-skewness control (+0.053) |
+| Gaussian families                      | Constant curvature — do not use    |
+| 1D parameter families (Poisson, Exp)   | R≡0 — do not use                   |
+| Large n + misspecified model (n>500)   | Degrades — use MMD/Wasserstein     |
+| No parametric model available          |  Use model-free tests instead       |
 
 See `docs/operational_envelope.md` for falsifiable claims.
 
 ---
 
-## When to Use IGAD
+## When to Use Curvision
 
 - The correct parametric family is known or approximately known
 - Batch sizes are moderate (50–500 observations)
@@ -285,22 +279,22 @@ TestDirichletLogPartition    (4)   — log-partition identity, convexity, roundt
 TestDirichletFisherMetric    (5)   — matches numerical Hessian, PD, k=4
 TestDirichletCurvature       (4)   — finite, non-constant, separates anomaly pair
 TestDirichletMLE             (5)   — recovery rtol=0.05, convergence gate
-TestIGADDirichletDetection   (4)   — AUC>0.65 at n=200, monotone in n
+TestCurvisionDirichletDetection   (4)   — AUC>0.65 at n=200, monotone in n
 TestFailureModes             (3)   — Poisson R≡0, Gaussian constant, k=2 degenerate
 TestGammaFamily             (12)   — existing suite, all passing
-TestIGADDetector             (5)   — score API, predict, zero-score self, positive on anomaly
+TestCurvisionDetector             (5)   — score API, predict, zero-score self, positive on anomaly
 ```
 
 ---
 
 ## Citation
 ```bibtex
-@article{damari2026igad,
-  title   = {IGAD: Information-Geometric Anomaly Detection via Scalar
+@article{damari2026Curvision,
+  title   = {Curvision: Information-Geometric Anomaly Detection via Scalar
              Curvature of Fisher-Rao Manifolds},
   author  = {Damari, Omry},
   year    = {2026},
-  url     = {https://github.com/Visigence/IGAD}
+  url     = {https://github.com/Visigence/Curvision}
 }
 ```
 
